@@ -1,3 +1,5 @@
+<img width="1145" height="1178" alt="image" src="https://github.com/user-attachments/assets/db1ac98e-1c79-4243-9cd5-9d159b88ea5e" />
+
 # 配置文件说明 (config.json)
 
 ## 简介
