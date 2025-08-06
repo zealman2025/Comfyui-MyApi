@@ -1,7 +1,7 @@
 <img width="1145" height="1178" alt="image" src="https://github.com/user-attachments/assets/db1ac98e-1c79-4243-9cd5-9d159b88ea5e" />
 
 # 配置文件说明 (config.json)
-
+首先你需要将config.json.example改名为config.json（这样做是为了之后更新时你本地的配置文件不会被替换）
 ## 简介
 `config.json` 文件是所有API节点的统一配置文件，您可以通过修改此文件来：
 - 更新各种API的密钥
@@ -136,15 +136,10 @@
 ## Gemini节点使用说明
 
 ### API密钥获取
-1. 访问 [Google AI Studio](https://aistudio.google.com/)
-2. 注册或登录您的Google账户
-3. 创建API密钥
-4. 将密钥配置到 `config.json` 中的 `gemini_api_key` 字段
-
-### 支持的模型
-- **gemini-2.0-flash**: Gemini 2.0 Flash - 快速响应，适合大多数任务
-- **gemini-2.5-flash**: Gemini 2.5 Flash - 更强能力，支持图像分析
-- **gemini-2.5-pro**: Gemini 2.5 Pro - 最强模型，适合复杂任务
+1. Gemini(使用需要魔法)访问https://aistudio.google.com/
+2. Xai(使用需要魔法)访问https://x.ai/api
+3. QWEN访问https://bailian.console.aliyun.com/?tab=api#/api
+4. Doubao访问https://www.volcengine.com/experience/ark
 
 ### 节点功能
 - ✅ 文本生成和对话
@@ -159,7 +154,7 @@ pip install google-genai pillow numpy
 ```
 
 ### 使用注意事项
-1. **API密钥**：确保在config.json中正确配置gemini_api_key
+1. **API密钥**：确保在config.json中正确配置api_key
 2. **网络连接**：需要稳定的网络连接到Google服务
 3. **图像格式**：支持PNG、JPEG、WEBP等常见格式
 4. **Token限制**：不同模型有不同的输入输出token限制
