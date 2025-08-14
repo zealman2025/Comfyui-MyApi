@@ -92,9 +92,18 @@ class DoubaoNode:
         
     def _load_api_key(self):
         try:
-            with open(self.config_path, 'r') as f:
-                config = json.load(f)
-                return config.get('doubao_api_key', '')
+            key = ""
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    key = (config.get('doubao_api_key', '') or '').strip()
+            if not key:
+                key = (os.environ.get('ARK_API_KEY') or os.environ.get('DOUBAO_API_KEY') or '').strip()
+            if not key:
+                print(f"[DoubaoNode] 未找到 API Key。config 路径: {self.config_path}, exists={os.path.exists(self.config_path)}；环境变量 ARK_API_KEY/DOUABAO_API_KEY 未设置")
+            else:
+                print(f"[DoubaoNode] 已加载 API Key，长度={len(key)}")
+            return key
         except Exception as e:
             print(f"Error loading Doubao API key: {str(e)}")
             return ''
@@ -130,8 +139,8 @@ class DoubaoNode:
         if not HAS_PIL:
             missing_deps.append("Pillow")
             
-        if not HAS_OPENAI:
-            missing_deps.append("openai")
+        if not HAS_REQUESTS:
+            missing_deps.append("requests")
             
         return missing_deps
 
@@ -275,16 +284,12 @@ class DoubaoNode:
             print(f"Image provided: {image is not None}")
             print(f"Using seed: {seed}")
             
-            if not HAS_OPENAI:
-                return ("Error: openai 软件包未安装。请使用以下命令安装它 'pip install openai'",)
-                
+            # 校验 API Key 是否存在
+            if not self.api_key:
+                return ("Error: 请先在 config.json 中配置 doubao_api_key",)
+            
             # 使用豆包API，针对深度思考模型设置更长的超时时间
             timeout_value = 1800 if model == "doubao-seed-1-6-250615" else 60
-            client = OpenAI(
-                api_key=self.api_key,
-                base_url="https://ark.cn-beijing.volces.com/api/v3",
-                timeout=timeout_value
-            )
 
             # 创建用户消息内容，按照官方示例格式
             user_content = []
@@ -317,27 +322,39 @@ class DoubaoNode:
 
             print(f"Calling Doubao API with model: {model}")
             
-            # 构建API调用参数
-            api_params = {
+            # 直接使用 HTTP 请求，避免 SDK 兼容性导致的 401
+            url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}"
+            }
+            payload = {
                 "model": model,
                 "messages": messages,
                 "max_tokens": max_tokens,
                 "temperature": temperature,
                 "top_p": top_p
             }
-            
-            # 为 doubao-seed-1-6-250615 模型添加深度思考控制
+            # 为 doubao-seed-1-6-250615 模型添加深度思考控制（按照官方 extra_body.thinking）
             if model == "doubao-seed-1-6-250615":
-                api_params["extra_body"] = {
-                    "thinking": {
-                        "type": api_thinking_mode
-                    }
-                }
+                payload["extra_body"] = {"thinking": {"type": api_thinking_mode}}
                 print(f"深度思考模式: {thinking_mode} (API值: {api_thinking_mode})")
             
-            completion = client.chat.completions.create(**api_params)
-
-            response_text = completion.choices[0].message.content
+            resp = requests.post(url, headers=headers, json=payload, timeout=timeout_value)
+            print(f"Response status code: {resp.status_code}")
+            if not resp.ok:
+                try:
+                    err_json = resp.json()
+                    err_message = err_json.get('error', {}).get('message', resp.text)
+                except Exception:
+                    err_message = resp.text
+                # 针对常见错误给出提示
+                if resp.status_code == 401:
+                    return ("Error: 身份验证失败(401)。请确认 config.json 中的 doubao_api_key 正确且未包含多余空格。若仍失败，请直接用该 key 以 cURL 调用验证。",)
+                return (f"Error: {resp.status_code} - {err_message}",)
+            
+            result = resp.json()
+            response_text = result["choices"][0]["message"]["content"]
 
             # 更新种子
             self.current_seed = seed
@@ -357,9 +374,18 @@ class DoubaoImageEditNode:
 
     def _load_api_key(self):
         try:
-            with open(self.config_path, 'r') as f:
-                config = json.load(f)
-                return config.get('doubao_api_key', '')
+            key = ""
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    key = (config.get('doubao_api_key', '') or '').strip()
+            if not key:
+                key = (os.environ.get('ARK_API_KEY') or os.environ.get('DOUBAO_API_KEY') or '').strip()
+            if not key:
+                print(f"[DoubaoImageEditNode] 未找到 API Key。config 路径: {self.config_path}, exists={os.path.exists(self.config_path)}；环境变量 ARK_API_KEY/DOUABAO_API_KEY 未设置")
+            else:
+                print(f"[DoubaoImageEditNode] 已加载 API Key，长度={len(key)}")
+            return key
         except Exception as e:
             print(f"Error loading Doubao API key: {str(e)}")
             return ''
@@ -644,9 +670,18 @@ class DoubaoTextToImageNode:
 
     def _load_api_key(self):
         try:
-            with open(self.config_path, 'r') as f:
-                config = json.load(f)
-                return config.get('doubao_api_key', '')
+            key = ""
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    key = (config.get('doubao_api_key', '') or '').strip()
+            if not key:
+                key = (os.environ.get('ARK_API_KEY') or os.environ.get('DOUBAO_API_KEY') or '').strip()
+            if not key:
+                print(f"[DoubaoTextToImageNode] 未找到 API Key。config 路径: {self.config_path}, exists={os.path.exists(self.config_path)}；环境变量 ARK_API_KEY/DOUABAO_API_KEY 未设置")
+            else:
+                print(f"[DoubaoTextToImageNode] 已加载 API Key，长度={len(key)}")
+            return key
         except Exception as e:
             print(f"Error loading Doubao API key: {str(e)}")
             return ''
