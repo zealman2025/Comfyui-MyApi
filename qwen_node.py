@@ -42,26 +42,12 @@ def load_qwen_models_from_config():
             config = json.load(f)
             models = config.get('models', {})
             qwen_models = models.get('qwen', {})
-            
-            # 如果配置文件中没有模型配置，使用默认值
-            if not qwen_models:
-                qwen_models = {
-                    "qwen-plus": "Qwen Plus",
-                    "qwen-max": "Qwen Max",
-                    "qwen-vl-plus": "Qwen VL Plus",
-                    "qwen-vl-max": "Qwen VL Max",
-                }
-                
+            # 移除默认模型回退
             return qwen_models
     except Exception as e:
         print(f"Error loading Qwen models from config: {str(e)}")
-        # 返回默认模型配置
-        return {
-            "qwen-plus": "Qwen Plus",
-            "qwen-max": "Qwen Max",
-            "qwen-vl-plus": "Qwen VL Plus",
-            "qwen-vl-max": "Qwen VL Max",
-        }
+        # 不再提供默认模型
+        return {}
 
 # 加载模型配置
 QWEN_MODELS = load_qwen_models_from_config()
@@ -74,10 +60,20 @@ class QwenNode:
         
     def _load_api_key(self):
         try:
-            with open(self.config_path, 'r') as f:
-                config = json.load(f)
-                # 兼容旧的配置格式
-                return config.get('qwen_api_key', config.get('api_key', ''))
+            key = ""
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    # 兼容旧的配置格式
+                    key = (config.get('qwen_api_key', config.get('api_key', '')) or '').strip()
+            if not key:
+                # 支持从环境变量读取（DashScope/Qwen 常用）
+                key = (os.environ.get('DASHSCOPE_API_KEY') or os.environ.get('QWEN_API_KEY') or '').strip()
+            if not key:
+                print(f"[QwenNode] 未找到 API Key。config 路径: {self.config_path}, exists={os.path.exists(self.config_path)}；环境变量 DASHSCOPE_API_KEY/QWEN_API_KEY 未设置")
+            else:
+                print(f"[QwenNode] 已加载 API Key，长度={len(key)}")
+            return key
         except Exception as e:
             print(f"Error loading Qwen API key: {str(e)}")
             return ''
@@ -254,9 +250,11 @@ class QwenNode:
             print(f"Using seed: {seed}")
             
             if not HAS_OPENAI:
-                return ("Error: openai 软件包未安装。请使用以下命令安装它 'pip install openai'",)
-                
-            # 使用OpenAI兼容API
+                return ("Error: openai 软件包未安装。请使用以下命令安装它 'pip install \"openai>=1.0\"'",)
+            if not self.api_key:
+                return ("Error: 请在 config.json 中配置 qwen_api_key（或 api_key），或设置环境变量 DASHSCOPE_API_KEY/QWEN_API_KEY",)
+
+            # 使用OpenAI兼容API（DashScope 兼容 OpenAI 协议）
             client = OpenAI(
                 api_key=self.api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"

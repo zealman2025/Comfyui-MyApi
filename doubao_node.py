@@ -50,36 +50,12 @@ def load_models_from_config():
             doubao_models = models.get('doubao', {})
             doubao_image_edit_models = models.get('doubao_image_edit', {})
             doubao_text_to_image_models = models.get('doubao_text_to_image', {})
-            
-            # 如果配置文件中没有模型配置，使用默认值
-            if not doubao_models:
-                doubao_models = {
-                    "doubao-1-5-vision-pro-32k-250115": "豆包1.5视觉专业版32k",
-                    "doubao-seed-1-6-250615": "豆包Seed1.6版",
-                }
-            
-            if not doubao_image_edit_models:
-                doubao_image_edit_models = {
-                    "doubao-seededit-3-0-i2i-250628": "豆包图像编辑3.0版",
-                }
-            
-            if not doubao_text_to_image_models:
-                doubao_text_to_image_models = {
-                    "doubao-seedream-3-0-t2i-250415": "豆包文生图3.0版",
-                }
-                
+            # 移除默认模型回退：仅使用配置文件中的内容
             return doubao_models, doubao_image_edit_models, doubao_text_to_image_models
     except Exception as e:
         print(f"Error loading models from config: {str(e)}")
-        # 返回默认模型配置
-        return {
-            "doubao-1-5-vision-pro-32k-250115": "豆包1.5视觉专业版32k",
-            "doubao-seed-1-6-250615": "豆包Seed1.6版",
-        }, {
-            "doubao-seededit-3-0-i2i-250628": "豆包图像编辑3.0版",
-        }, {
-            "doubao-seedream-3-0-t2i-250415": "豆包文生图3.0版",
-        }
+        # 不再提供默认模型，返回空集合
+        return {}, {}, {}
 
 # 加载模型配置
 DOUBAO_MODELS, DOUBAO_IMAGE_EDIT_MODELS, DOUBAO_TEXT_TO_IMAGE_MODELS = load_models_from_config()

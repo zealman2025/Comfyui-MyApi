@@ -42,20 +42,12 @@ def load_xai_models_from_config():
             config = json.load(f)
             models = config.get('models', {})
             xai_models = models.get('xai', {})
-            
-            # 如果配置文件中没有模型配置，使用默认值
-            if not xai_models:
-                xai_models = {
-                    "grok-2-vision-1212": "Grok 2 Vision 1212",
-                }
-                
+            # 移除默认模型回退
             return xai_models
     except Exception as e:
         print(f"Error loading XAI models from config: {str(e)}")
-        # 返回默认模型配置
-        return {
-            "grok-2-vision-1212": "Grok 2 Vision 1212",
-        }
+        # 不再提供默认模型
+        return {}
 
 # 加载模型配置
 XAI_MODELS = load_xai_models_from_config()

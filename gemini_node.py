@@ -10,20 +10,12 @@ def load_gemini_models_from_config():
             config = json.load(f)
             models = config.get('models', {})
             gemini_models = models.get('gemini', {})
-            
-            # 如果配置文件中没有模型配置，使用默认值
-            if not gemini_models:
-                gemini_models = {
-                    "gemini-2.0-flash": "Gemini 2.0 Flash"
-                }
-                
+            # 移除默认模型回退
             return gemini_models
     except Exception as e:
         print(f"Error loading Gemini models from config: {str(e)}")
-        # 返回默认模型配置
-        return {
-            "gemini-2.0-flash": "Gemini 2.0 Flash"
-        }
+        # 不再提供默认模型
+        return {}
 
 # 加载模型配置
 GEMINI_MODELS = load_gemini_models_from_config()
