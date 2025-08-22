@@ -1,5 +1,6 @@
+## Comfyui-MyApi-支持双图输入节点
+<img width="1682" height="1479" alt="image" src="https://github.com/user-attachments/assets/b0828902-4add-48ac-868e-69fb0931770e" />
 <img width="1145" height="1178" alt="image" src="https://github.com/user-attachments/assets/db1ac98e-1c79-4243-9cd5-9d159b88ea5e" />
-
 # 配置文件说明 (config.json)
 首先你需要将config.json.example改名为config.json（这样做是为了之后更新时你本地的配置文件不会被替换）
 ## 简介
@@ -18,12 +19,13 @@
     "gemini_api_key": "your_gemini_api_key_here",
     "models": {
         "qwen": {
-            "model_id": "显示名称",
-            "qwen-plus": "Qwen Plus",
-            "qwen-max": "Qwen Max"
+            "model_id": "显示名称其他下面模型都可以自己添加",
+            "qwen-vl-plus": "Qwen VL Plus",
+            "qwen-vl-max": "Qwen VL Max"
         },
         "doubao": {
-            "doubao-1-5-vision-pro-32k-250115": "豆包1.5视觉专业版32k"
+            "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
+            "doubao-seed-1-6-250615": "豆包Seed1.6版"
         },
         "doubao_image_edit": {
             "doubao-seededit-3-0-i2i-250628": "豆包图像编辑3.0版"
@@ -32,12 +34,13 @@
             "doubao-seedream-3-0-t2i-250415": "豆包文生图3.0版"
         },
         "xai": {
-            "grok-2-vision-1212": "Grok 2 Vision 1212"
+            "grok-2-vision-1212": "Grok 2 Vision 1212",
+			"grok-4": "grok-4"
         },
         "gemini": {
-            "gemini-2.0-flash": "Gemini 2.0 Flash",
-            "gemini-2.5-flash": "Gemini 2.5 Flash",
-            "gemini-2.5-pro": "Gemini 2.5 Pro"
+            "gemini-2.5-pro": "Gemini 2.5 pro",
+			"gemini-2.5-flash": "Gemini 2.5 flash",
+			"gemini-2.0-flash": "Gemini 2.5 flash"
         }
     }
 }
@@ -158,7 +161,3 @@ pip install google-genai pillow numpy
 2. **网络连接**：需要稳定的网络连接到Google服务
 3. **图像格式**：支持PNG、JPEG、WEBP等常见格式
 4. **Token限制**：不同模型有不同的输入输出token限制
-
-## 默认配置恢复
-
-如果配置文件损坏，删除对应的models节点，程序会自动使用默认配置。
