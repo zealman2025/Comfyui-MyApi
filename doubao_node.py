@@ -94,7 +94,7 @@ class DoubaoNode:
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7fffffff}),
-                "thinking_mode": (["自动", "启用", "禁用"], {"default": "自动"}),
+                "thinking_mode": (["自动", "启用", "禁用"], {"default": "禁用"}),
             },
             "optional": {
                 "image": ("IMAGE",),
