@@ -72,13 +72,14 @@ class XAINode:
             "required": {
                 "model": (list(XAI_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
-                "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 8192}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
             "optional": {
                 "image": ("IMAGE",),
+                "image_2": ("IMAGE",),
             }
         }
 
@@ -217,7 +218,7 @@ class XAINode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None):
+    def process(self, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None, image_2=None):
         """主处理函数"""
         
         # 检查依赖
@@ -252,28 +253,46 @@ class XAINode:
             # 创建用户消息
             user_content = []
             
-            # 处理图像输入
+            # 处理图像输入（按 图1 - 文本 - 图2 的顺序）
             if image is not None:
                 try:
-                    print(f"Processing image for XAI API...")
+                    print(f"Processing image 1 for XAI API...")
                     image_base64 = self._encode_image_to_base64(image)
                     user_content.append({
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
+                            "url": f"data:image/jpeg;base64,{image_base64}",
+                            "detail": "high"
                         }
                     })
-                    print("Successfully added image to message")
+                    print("Successfully added image 1 to message")
                 except Exception as e:
-                    print(f"Error processing image: {str(e)}")
+                    print(f"Error processing image 1: {str(e)}")
                     print(traceback.format_exc())
-                    return (f"Error processing image: {str(e)}",)
+                    return (f"Error processing image 1: {str(e)}",)
 
             # 添加文本提示
             # 根据种子生成请求ID，确保相同种子产生相同结果
             request_id = self._generate_request_id(seed)
             actual_prompt = f"{prompt}\n\n[Request ID: {request_id}]"
             user_content.append({"type": "text", "text": actual_prompt})
+
+            if image_2 is not None:
+                try:
+                    print(f"Processing image 2 for XAI API...")
+                    image2_base64 = self._encode_image_to_base64(image_2)
+                    user_content.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image2_base64}",
+                            "detail": "high"
+                        }
+                    })
+                    print("Successfully added image 2 to message")
+                except Exception as e:
+                    print(f"Error processing image 2: {str(e)}")
+                    print(traceback.format_exc())
+                    return (f"Error processing image 2: {str(e)}",)
 
             messages.append({
                 "role": "user",

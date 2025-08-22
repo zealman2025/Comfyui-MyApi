@@ -90,7 +90,7 @@ class DoubaoNode:
             "required": {
                 "model": (list(DOUBAO_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
-                "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 4096}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7fffffff}),
@@ -98,6 +98,7 @@ class DoubaoNode:
             },
             "optional": {
                 "image": ("IMAGE",),
+                "image_2": ("IMAGE",),
             }
         }
 
@@ -236,7 +237,7 @@ class DoubaoNode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, thinking_mode="自动", image=None):
+    def process(self, model, prompt, max_tokens=4096, temperature=1.0, top_p=0.7, seed=0, thinking_mode="自动", image=None, image_2=None):
         """主处理函数"""
         # 中文思考模式映射为英文API值
         thinking_mode_map = {
@@ -257,7 +258,8 @@ class DoubaoNode:
             
         try:
             print(f"Processing request with model: {model}")
-            print(f"Image provided: {image is not None}")
+            print(f"Image 1 provided: {image is not None}")
+            print(f"Image 2 provided: {image_2 is not None}")
             print(f"Using seed: {seed}")
             
             # 校验 API Key 是否存在
@@ -270,10 +272,10 @@ class DoubaoNode:
             # 创建用户消息内容，按照官方示例格式
             user_content = []
             
-            # 处理图像输入
+            # 处理图像输入（支持两张图像）
             if image is not None:
                 try:
-                    print(f"Processing image for API...")
+                    print(f"Processing image 1 for API...")
                     image_base64 = self._encode_image_to_base64(image)
                     user_content.append({
                         "type": "image_url",
@@ -281,11 +283,27 @@ class DoubaoNode:
                             "url": f"data:image/jpeg;base64,{image_base64}"
                         }
                     })
-                    print("Successfully added image to message")
+                    print("Successfully added image 1 to message")
                 except Exception as e:
-                    print(f"Error processing image: {str(e)}")
+                    print(f"Error processing image 1: {str(e)}")
                     print(traceback.format_exc())
-                    return (f"Error processing image: {str(e)}",)
+                    return (f"Error processing image 1: {str(e)}",)
+
+            if image_2 is not None:
+                try:
+                    print(f"Processing image 2 for API...")
+                    image2_base64 = self._encode_image_to_base64(image_2)
+                    user_content.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image2_base64}"
+                        }
+                    })
+                    print("Successfully added image 2 to message")
+                except Exception as e:
+                    print(f"Error processing image 2: {str(e)}")
+                    print(traceback.format_exc())
+                    return (f"Error processing image 2: {str(e)}",)
 
             # 添加文本提示
             user_content.append({"type": "text", "text": prompt})
