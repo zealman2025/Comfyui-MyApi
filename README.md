@@ -152,9 +152,16 @@
 - ✅ 种子控制，支持确定性输出
 
 ### 依赖安装
-```bash
-pip install google-genai pillow numpy
-```
+一般情况你无需安装依赖，comfyui的很多插件已经涵盖了该项目所使用依赖
+如果不确定是否依赖装了 可以打开cmd输入命令
+
+**如果你是官方版comfyui
+G:\ComfyU安装根目录\python_embeded\python.exe -m pip install openai google-genai requests Pillow numpy
+
+**如果你是秋叶版本comfyui
+G:\ComfyU安装根目录\python\python.exe -m pip install openai google-genai requests Pillow numpy
+
+这个命令会安装缺失的包,跳过已安装的版本,不强制升级已有依赖,不卸载重装
 
 ### 使用注意事项
 1. **API密钥**：确保在config.json中正确配置api_key
