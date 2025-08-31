@@ -50,30 +50,37 @@ class GeminiAINode:
             "optional": {
                 "image": ("IMAGE",),
                 "image_2": ("IMAGE",),
+                "image_3": ("IMAGE",),
+                "image_4": ("IMAGE",),
+                "image_5": ("IMAGE",),
             }
         }
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("STRING", "IMAGE")
+    RETURN_NAMES = ("text", "image")
     FUNCTION = "process"
     CATEGORY = "🍎MYAPI"
 
-    def process(self, model, prompt, max_tokens=4096, temperature=1.0, top_p=0.95, top_k=40, seed=0, image=None, image_2=None):
+    def process(self, model, prompt, max_tokens=4096, temperature=1.0, top_p=0.95, top_k=40, seed=0, image=None, image_2=None, image_3=None, image_4=None, image_5=None):
         """主处理函数"""
         
         if not self.api_key:
-            return ("Error: 请在config.json中配置gemini_api_key。请访问 https://aistudio.google.com/ 获取API密钥。",)
+            return ("Error: 请在config.json中配置gemini_api_key。请访问 https://aistudio.google.com/ 获取API密钥。", None)
         
         try:
             # 检查google-genai是否可用
             from google import genai
             from google.genai import types
         except ImportError:
-            return ("Error: 请安装google-genai: pip install google-genai",)
+            return ("Error: 请安装google-genai: pip install google-genai", None)
         
         try:
             print(f"Processing request with Gemini model: {model}")
             print(f"Image 1 provided: {image is not None}")
             print(f"Image 2 provided: {image_2 is not None}")
+            print(f"Image 3 provided: {image_3 is not None}")
+            print(f"Image 4 provided: {image_4 is not None}")
+            print(f"Image 5 provided: {image_5 is not None}")
             print(f"Using seed: {seed}")
             
             # 初始化客户端
@@ -115,56 +122,106 @@ class GeminiAINode:
                 except Exception as e:
                     raise Exception(f"Error converting image to part: {str(e)}")
 
-            # 处理第一张图像（作为 Part）
-            part1 = None
-            if image is not None:
+            def bytes_to_image_tensor(image_bytes):
                 try:
-                    part1 = image_to_part(image)
-                    print("Successfully converted image 1 to Part")
+                    from PIL import Image
+                    import numpy as np
+                    import torch
+                    with Image.open(io.BytesIO(image_bytes)) as img:
+                        img = img.convert('RGB')
+                        np_img = np.array(img).astype(np.float32) / 255.0
+                    tensor = torch.from_numpy(np_img).unsqueeze(0)
+                    return tensor
                 except Exception as e:
-                    return (f"Error processing image 1: {str(e)}",)
+                    raise Exception(f"Error converting bytes to image tensor: {str(e)}")
 
-            # 处理第二张图像（作为 Part）
-            part2 = None
-            if image_2 is not None:
+            def get_placeholder_image(height=64, width=64):
                 try:
-                    part2 = image_to_part(image_2)
-                    print("Successfully converted image 2 to Part")
-                except Exception as e:
-                    return (f"Error processing image 2: {str(e)}",)
+                    import torch
+                    return torch.zeros((1, height, width, 3), dtype=torch.float32)
+                except Exception:
+                    return None
+
+            # 处理最多五张图像（作为 Part）
+            image_inputs = [image, image_2, image_3, image_4, image_5]
+            parts = []
+            for idx, img in enumerate(image_inputs, start=1):
+                if img is not None:
+                    try:
+                        part = image_to_part(img)
+                        parts.append(part)
+                        print(f"Successfully converted image {idx} to Part")
+                    except Exception as e:
+                        return (f"Error processing image {idx}: {str(e)}", None)
 
             # 依据是否单图/多图构造 contents 顺序
-            if part1 is not None and part2 is not None:
-                # 多图：文本放在最前（参照官方多图示例）
-                contents = [prompt, part1, part2]
-            elif part1 is not None:
-                # 单图1：文本放在图后
-                contents = [part1, prompt]
-            elif part2 is not None:
-                # 只有图2：同单图规则
-                contents = [part2, prompt]
+            if len(parts) >= 2:
+                contents = [prompt] + parts
+            elif len(parts) == 1:
+                contents = [parts[0], prompt]
             else:
                 contents = [prompt]
 
             # 生成配置
+            is_stream_image_model = (model == "gemini-2.5-flash-image-preview")
             config = types.GenerateContentConfig(
                 temperature=temperature,
                 top_p=top_p,
                 top_k=top_k,
                 max_output_tokens=max_tokens,
                 seed=seed if seed != 0 and seed <= 0x7fffffff else None,
-                response_modalities=["Text"],
-                response_mime_type="text/plain"
+                response_modalities=["IMAGE", "TEXT"] if is_stream_image_model else ["Text"],
+                response_mime_type=None if is_stream_image_model else "text/plain"
             )
 
-            # 调用API
+            # 根据模型选择流式或非流式调用
             print(f"Calling Gemini API with model: {model}")
-            
-            response = client.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config
-            )
+            if is_stream_image_model:
+                collected_images = []
+                collected_texts = []
+                try:
+                    for chunk in client.models.generate_content_stream(
+                        model=model,
+                        contents=contents,
+                        config=config,
+                    ):
+                        if (
+                            getattr(chunk, 'candidates', None) is None
+                            or chunk.candidates[0].content is None
+                            or chunk.candidates[0].content.parts is None
+                            or len(chunk.candidates[0].content.parts) == 0
+                        ):
+                            # 纯文本增量
+                            if hasattr(chunk, 'text') and chunk.text:
+                                collected_texts.append(chunk.text)
+                            continue
+                        part0 = chunk.candidates[0].content.parts[0]
+                        inline_data = getattr(part0, 'inline_data', None)
+                        if inline_data and getattr(inline_data, 'data', None):
+                            try:
+                                tensor_img = bytes_to_image_tensor(inline_data.data)
+                                collected_images.append(tensor_img)
+                                if len(collected_images) >= 5:
+                                    # 收集最多5张
+                                    pass
+                            except Exception as e:
+                                print(f"Error decoding streamed image: {str(e)}")
+                        else:
+                            if hasattr(chunk, 'text') and chunk.text:
+                                collected_texts.append(chunk.text)
+                except Exception as e:
+                    print(f"Stream error: {str(e)}")
+                    return (f"Error: 流式生成失败：{str(e)}", None)
+
+                text_out = "".join(collected_texts).strip()
+                first_image = collected_images[0] if len(collected_images) > 0 else get_placeholder_image()
+                return (text_out if text_out else "", first_image)
+            else:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents,
+                    config=config
+                )
             
             # 检查响应结构并提取文本
             if hasattr(response, 'candidates') and response.candidates:
@@ -174,11 +231,11 @@ class GeminiAINode:
                 if hasattr(candidate, 'finish_reason'):
                     finish_reason = str(candidate.finish_reason)
                     if finish_reason == 'MAX_TOKENS':
-                        return ("Error: 响应因达到最大token限制而截断。请增加max_tokens值或简化提示词。",)
+                        return ("Error: 响应因达到最大token限制而截断。请增加max_tokens值或简化提示词。", None)
                     elif finish_reason == 'SAFETY':
-                        return ("Error: 响应因安全原因被阻止。请修改提示词内容。",)
+                        return ("Error: 响应因安全原因被阻止。请修改提示词内容。", None)
                     elif finish_reason == 'RECITATION':
-                        return ("Error: 响应因重复内容被截断。",)
+                        return ("Error: 响应因重复内容被截断。", None)
                 
                 # 优先从 finish_message 中提取
                 if hasattr(candidate, 'finish_message') and candidate.finish_message:
@@ -186,15 +243,15 @@ class GeminiAINode:
                     try:
                         # finish_message 可能含有 content/parts/text
                         if hasattr(fm, 'text') and fm.text:
-                            return (fm.text,)
+                            return (fm.text, get_placeholder_image())
                         if hasattr(fm, 'content') and fm.content:
                             fm_content = fm.content
                             if hasattr(fm_content, 'parts') and fm_content.parts:
                                 for p in fm_content.parts:
                                     if hasattr(p, 'text') and p.text:
-                                        return (p.text,)
+                                        return (p.text, get_placeholder_image())
                             if hasattr(fm_content, 'text') and fm_content.text:
-                                return (fm_content.text,)
+                                return (fm_content.text, get_placeholder_image())
                     except Exception:
                         pass
 
@@ -204,24 +261,24 @@ class GeminiAINode:
                     if hasattr(content, 'parts') and content.parts is not None:
                         for part in content.parts:
                             if hasattr(part, 'text') and part.text:
-                                return (part.text,)
+                                return (part.text, get_placeholder_image())
                     
                     if hasattr(content, 'text'):
-                        return (content.text,)
+                        return (content.text, get_placeholder_image())
                 
                 if hasattr(candidate, 'text'):
-                    return (candidate.text,)
+                    return (candidate.text, get_placeholder_image())
             
             # 尝试直接访问response.text
             if hasattr(response, 'text') and response.text:
-                return (response.text,)
+                return (response.text, get_placeholder_image())
             
             # SDK 辅助方法兜底
             if hasattr(response, '_get_text'):
                 try:
                     _t = response._get_text()
                     if _t:
-                        return (_t,)
+                        return (_t, get_placeholder_image())
                 except Exception:
                     pass
             
@@ -230,7 +287,7 @@ class GeminiAINode:
                 if hasattr(response, 'parsed') and response.parsed:
                     parsed_val = response.parsed
                     if isinstance(parsed_val, str) and parsed_val.strip():
-                        return (parsed_val,)
+                        return (parsed_val, get_placeholder_image())
             except Exception:
                 pass
 
@@ -244,7 +301,7 @@ class GeminiAINode:
                         cur = queue.pop(0)
                         if isinstance(cur, dict):
                             if 'text' in cur and isinstance(cur['text'], str) and cur['text'].strip():
-                                return (cur['text'],)
+                                return (cur['text'], get_placeholder_image())
                             queue.extend(cur.values())
                         elif isinstance(cur, list):
                             queue.extend(cur)
@@ -260,14 +317,14 @@ class GeminiAINode:
                     if hasattr(cand, 'finish_reason'):
                         fr = str(cand.finish_reason)
                 if fr:
-                    return (f"Error: 无法提取文本（finish_reason={fr}）。",)
+                    return (f"Error: 无法提取文本（finish_reason={fr}）。", get_placeholder_image())
             except Exception:
                 pass
-            return ("Error: 无法从响应中提取文本内容。",)
+            return ("Error: 无法从响应中提取文本内容。", get_placeholder_image())
             
         except Exception as e:
             print(f"Unexpected error in Gemini process: {str(e)}")
-            return (f"Error: {str(e)}",)
+            return (f"Error: {str(e)}", get_placeholder_image())
 
 NODE_CLASS_MAPPINGS = {
     "GeminiAINode": GeminiAINode
