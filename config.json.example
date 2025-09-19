@@ -20,12 +20,12 @@
         },
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
-			"grok-4": "grok-4"
+            "grok-4": "grok-4"
         },
         "gemini": {
             "gemini-2.5-pro": "Gemini 2.5 pro",
-			"gemini-2.5-flash": "Gemini 2.5 flash",
-			"gemini-2.5-flash-image-preview": "gemini-2.5-flash-image-preview"
+            "gemini-2.5-flash": "Gemini 2.5 flash",
+            "gemini-2.5-flash-image-preview": "gemini-2.5-flash-image-preview"
         }
     }
 } 
