@@ -3,7 +3,7 @@
 一个功能强大的ComfyUI插件，集成了多个主流AI服务，支持文本生成、图像理解、图像生成等多模态AI功能。
 
 <img width="1682" height="1479" alt="image" src="https://github.com/user-attachments/assets/b0828902-4add-48ac-868e-69fb0931770e" />
-<img width="1145" height="1178" alt="image" src="https://github.com/user-attachments/assets/db1ac98e-1c79-4243-9cd5-9d159b88ea5e" />
+<img width="1856" height="1186" alt="image" src="https://github.com/user-attachments/assets/c476ae65-7969-40cc-b58e-3186fcb1e4c0" />
 
 ## ✨ 主要特性
 
