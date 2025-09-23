@@ -38,12 +38,48 @@ class BizyAirNanoBananaNode:
     BizyAir NanoBanana专用节点
     专门用于调用BizyAir的NanoBanana模型API
     """
-    
+
+    def __init__(self):
+        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+
+    def _get_api_key(self, input_api_key):
+        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
+        # 定义无效的占位符文本
+        invalid_placeholders = [
+            "YOUR_API_KEY",
+            "你的apikey",
+            "your_api_key_here",
+            "请输入API密钥",
+            "请输入你的API密钥"
+        ]
+
+        # 如果输入了有效的API密钥，优先使用
+        if (input_api_key and
+            input_api_key.strip() and
+            input_api_key.strip() not in invalid_placeholders):
+            print(f"[BizyAirNanoBanana] 使用输入的API密钥")
+            return input_api_key.strip()
+
+        # 否则从config.json读取
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                config_api_key = config.get('bizyair_api_key', '').strip()
+                if config_api_key:
+                    print(f"[BizyAirNanoBanana] 使用config.json中的API密钥")
+                    return config_api_key
+                else:
+                    print(f"[BizyAirNanoBanana] config.json中未找到bizyair_api_key")
+                    return ''
+        except Exception as e:
+            print(f"[BizyAirNanoBanana] 读取config.json失败: {str(e)}")
+            return ''
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_key": ("STRING", {"default": "YOUR_API_KEY", "multiline": False}),
+                "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "使用英文版提示词更准确"}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
@@ -53,7 +89,7 @@ class BizyAirNanoBananaNode:
         }
 
     RETURN_TYPES = ("IMAGE", "STRING")
-    RETURN_NAMES = ("image", "status")
+    RETURN_NAMES = ("image", "string")
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
@@ -156,12 +192,17 @@ class BizyAirNanoBananaNode:
 
     def generate(self, api_key, prompt, seed, image=None):
         """生成图像"""
-        
+
+        # 获取实际使用的API密钥
+        actual_api_key = self._get_api_key(api_key)
+        if not actual_api_key:
+            raise Exception("请输入API密钥或在config.json中配置bizyair_api_key。请访问 https://bizyair.cn 获取API密钥。")
+
         # 检查依赖
         missing_deps = self._check_dependencies()
         if missing_deps:
             raise Exception(f"缺少必要的依赖: {', '.join(missing_deps)}. 请安装这些依赖后再试。")
-        
+
         # 生成随机种子（如果需要）
         if seed == 0:
             seed = random.randint(1, 2**32 - 1)
@@ -173,7 +214,7 @@ class BizyAirNanoBananaNode:
             # 准备请求头
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
+                "Authorization": f"Bearer {actual_api_key}"
             }
             
             # 构建input_values

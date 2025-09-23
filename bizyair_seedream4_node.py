@@ -39,12 +39,48 @@ class BizyAirSeedream4Node:
     专门用于调用BizyAir的Seedream4模型API
     支持图像输入、提示词、尺寸选择和自定义宽高
     """
-    
+
+    def __init__(self):
+        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+
+    def _get_api_key(self, input_api_key):
+        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
+        # 定义无效的占位符文本
+        invalid_placeholders = [
+            "YOUR_API_KEY",
+            "你的apikey",
+            "your_api_key_here",
+            "请输入API密钥",
+            "请输入你的API密钥"
+        ]
+
+        # 如果输入了有效的API密钥，优先使用
+        if (input_api_key and
+            input_api_key.strip() and
+            input_api_key.strip() not in invalid_placeholders):
+            print(f"[BizyAirSeedream4] 使用输入的API密钥")
+            return input_api_key.strip()
+
+        # 否则从config.json读取
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                config_api_key = config.get('bizyair_api_key', '').strip()
+                if config_api_key:
+                    print(f"[BizyAirSeedream4] 使用config.json中的API密钥")
+                    return config_api_key
+                else:
+                    print(f"[BizyAirSeedream4] config.json中未找到bizyair_api_key")
+                    return ''
+        except Exception as e:
+            print(f"[BizyAirSeedream4] 读取config.json失败: {str(e)}")
+            return ''
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "api_key": ("STRING", {"default": "YOUR_API_KEY", "multiline": False}),
+                "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "将兔子改为小猫"}),
                 "size": ([
                     "1K Square (1024x1024)",
@@ -59,8 +95,8 @@ class BizyAirSeedream4Node:
                     "Ultra-wide 21:9 (3440x1440)",
                     "Custom"
                 ], {"default": "1K Square (1024x1024)"}),
-                "custom_width": ("INT", {"default": 1920, "min": 1024, "max": 8192, "step": 64}),
-                "custom_height": ("INT", {"default": 1080, "min": 1024, "max": 8192, "step": 64}),
+                "custom_width": ("INT", {"default": 1920, "min": 1024, "max": 8192, "step": 16}),
+                "custom_height": ("INT", {"default": 1080, "min": 1024, "max": 8192, "step": 16}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
             "optional": {
@@ -69,7 +105,7 @@ class BizyAirSeedream4Node:
         }
 
     RETURN_TYPES = ("IMAGE", "STRING")
-    RETURN_NAMES = ("image", "status")
+    RETURN_NAMES = ("image", "string")
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
@@ -212,7 +248,12 @@ class BizyAirSeedream4Node:
 
     def generate(self, api_key, prompt, size, custom_width, custom_height, seed, image=None):
         """生成图像"""
-        
+
+        # 获取实际使用的API密钥
+        actual_api_key = self._get_api_key(api_key)
+        if not actual_api_key:
+            raise Exception("请输入API密钥或在config.json中配置bizyair_api_key。请访问 https://bizyair.cn 获取API密钥。")
+
         # 检查依赖
         missing_deps = self._check_dependencies()
         if missing_deps:
@@ -233,7 +274,7 @@ class BizyAirSeedream4Node:
             # 准备请求头
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
+                "Authorization": f"Bearer {actual_api_key}"
             }
             
             # 构建input_values

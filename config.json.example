@@ -1,8 +1,10 @@
 {
-    "qwen_api_key": "your_api_key_here",
-    "doubao_api_key": "your_api_key_here",
-    "xai_api_key": "your_api_key_here",
-    "gemini_api_key": "your_api_key_here",
+    "qwen_api_key": "你的apikey",
+    "doubao_api_key": "你的apikey",
+    "xai_api_key": "你的apikey",
+    "gemini_api_key": "你的apikey",
+    "openrouter_api_key": "你的apikey",
+    "bizyair_api_key": "你的apikey",
     "models": {
         "qwen": {
             "qwen-vl-plus": "Qwen VL Plus",
@@ -12,20 +14,14 @@
             "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
             "doubao-seed-1-6-250615": "豆包Seed1.6版"
         },
-        "doubao_image_edit": {
-            "doubao-seededit-3-0-i2i-250628": "豆包图像编辑3.0版"
-        },
-        "doubao_text_to_image": {
-            "doubao-seedream-3-0-t2i-250415": "豆包文生图3.0版"
-        },
+
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
-            "grok-4": "grok-4"
+			"grok-4": "grok-4"
         },
         "gemini": {
             "gemini-2.5-pro": "Gemini 2.5 pro",
-            "gemini-2.5-flash": "Gemini 2.5 flash",
-            "gemini-2.5-flash-image-preview": "gemini-2.5-flash-image-preview"
+            "gemini-2.5-flash": "Gemini 2.5 flash"
         }
     }
 } 

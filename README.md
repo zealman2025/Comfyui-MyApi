@@ -1,25 +1,65 @@
-## Comfyui-MyApi-支持双图输入节点
+# 🍎 ComfyUI MyAPI - 多模态AI节点集合
+
+一个功能强大的ComfyUI插件，集成了多个主流AI服务，支持文本生成、图像理解、图像生成等多模态AI功能。
+
 <img width="1682" height="1479" alt="image" src="https://github.com/user-attachments/assets/b0828902-4add-48ac-868e-69fb0931770e" />
 <img width="1145" height="1178" alt="image" src="https://github.com/user-attachments/assets/db1ac98e-1c79-4243-9cd5-9d159b88ea5e" />
-# 配置文件说明 (config.json)
-首先你需要将config.json.example改名为config.json（这样做是为了之后更新时你本地的配置文件不会被替换）
-## 简介
-`config.json` 文件是所有API节点的统一配置文件，您可以通过修改此文件来：
-- 更新各种API的密钥
-- 添加或修改模型配置
-- 自定义模型显示名称
 
-## 配置文件结构
+## ✨ 主要特性
 
+- 🔑 **双重API密钥机制** - 支持节点输入和配置文件两种密钥管理方式
+- 🖼️ **多模态支持** - 文本生成、图像理解、图像生成一应俱全
+- 🎯 **多服务集成** - 支持Qwen、豆包、XAI Grok、Gemini、OpenRouter等主流AI服务
+- 🛠️ **灵活配置** - 可自定义模型列表和参数设置
+- 🔄 **智能回退** - 配置加载失败时自动使用默认模型
+- 📝 **详细日志** - 完整的调试信息和错误提示
+
+## 🚀 支持的AI节点
+
+### 📝 文本生成节点
+- **🍭 Qwen AI** - 阿里通义千问，支持2张图片输入
+- **🥟 豆包 AI** - 字节跳动豆包，支持2张图片输入
+- **🚀 XAI Grok** - xAI的Grok模型，支持2张图片输入
+- **🌟 Gemini AI** - Google Gemini，支持2张图片输入
+
+### 🎨 图像生成节点
+- **🌐 Gemini 2.5 Flash Image Preview** - 通过OpenRouter调用，支持5张图片输入
+- **🍌 BizyAir NanoBanana** - BizyAir图像生成服务，需BizyAir.cn充值金币
+- **🌈 BizyAir Seedream4** - BizyAir高级图像生成，需BizyAir.cn充值金币
+- **🥟 豆包 SEEDREAM 4.0** - 豆包图像生成，支持10张图片输入
+
+## 🔑 双重API密钥机制
+
+本插件支持两种API密钥管理方式，按优先级自动选择：
+
+### **优先级1: 节点输入**
+在每个节点的第一个输入框中直接输入API密钥，适用于：
+- 临时切换不同的API密钥
+- 测试新的API密钥
+- 分享工作流时保护隐私
+
+### **优先级2: 配置文件**
+在`config.json`中预设API密钥，适用于：
+- 日常使用的常用密钥
+- 避免重复输入
+- 批量管理多个密钥
+
+## ⚙️ 配置文件设置
+
+### 1. 初始化配置文件
+首先将`config.json.example`重命名为`config.json`（避免更新时覆盖您的配置）
+
+### 2. 配置文件结构
 ```json
 {
-    "qwen_api_key": "your_qwen_api_key_here",
-    "doubao_api_key": "your_doubao_api_key_here", 
-    "xai_api_key": "your_xai_api_key_here",
-    "gemini_api_key": "your_gemini_api_key_here",
+    "qwen_api_key": "你的apikey",
+    "doubao_api_key": "你的apikey",
+    "xai_api_key": "你的apikey",
+    "gemini_api_key": "你的apikey",
+    "openrouter_api_key": "你的apikey",
+    "bizyair_api_key": "你的apikey",
     "models": {
         "qwen": {
-            "model_id": "显示名称其他下面模型都可以自己添加",
             "qwen-vl-plus": "Qwen VL Plus",
             "qwen-vl-max": "Qwen VL Max"
         },
@@ -27,144 +67,178 @@
             "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
             "doubao-seed-1-6-250615": "豆包Seed1.6版"
         },
-        "doubao_image_edit": {
-            "doubao-seededit-3-0-i2i-250628": "豆包图像编辑3.0版"
-        },
-        "doubao_text_to_image": {
-            "doubao-seedream-3-0-t2i-250415": "豆包文生图3.0版"
-        },
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
-			"grok-4": "grok-4"
+            "grok-4": "grok-4"
         },
         "gemini": {
             "gemini-2.5-pro": "Gemini 2.5 pro",
-			"gemini-2.5-flash": "Gemini 2.5 flash",
-			"gemini-2.0-flash": "Gemini 2.5 flash"
+            "gemini-2.5-flash": "Gemini 2.5 flash"
         }
     }
 }
 ```
 
-## 如何添加新模型
+## 🔧 API密钥获取指南
 
-### 1. 添加Qwen模型
-在 `models.qwen` 节点下添加：
+### 🍭 Qwen (通义千问)
+- **官网**: https://bailian.console.aliyun.com/?tab=api#/api
+- **说明**: 阿里云百炼平台，国内可直接访问
+- **配置**: `qwen_api_key`
+
+### 🥟 豆包 (Doubao)
+- **官网**: https://www.volcengine.com/experience/ark
+- **说明**: 字节跳动火山引擎，国内可直接访问
+- **配置**: `doubao_api_key`
+
+### 🚀 XAI Grok
+- **官网**: https://x.ai/api
+- **说明**: xAI官方API，需要魔法上网
+- **配置**: `xai_api_key`
+
+### 🌟 Gemini
+- **官网**: https://aistudio.google.com/
+- **说明**: Google AI Studio，需要魔法上网
+- **配置**: `gemini_api_key`
+
+### 🌐 OpenRouter
+- **官网**: https://openrouter.ai/
+- **说明**: 多模型API聚合平台，支持支付宝和微信充值
+- **配置**: `openrouter_api_key`
+
+### 🍌 BizyAir
+- **官网**: https://bizyair.cn
+- **说明**: BizyAir图像生成平台，需要充值金币，国内可直接访问
+- **配置**: `bizyair_api_key`
+
+## 📋 节点详细功能
+
+### 📝 文本生成节点功能对比
+
+| 节点 | 图片输入 | 主要特性 | 适用场景 |
+|------|----------|----------|----------|
+| 🍭 Qwen AI | 2张 | 中文优化，响应快速 | 中文对话、文档分析 |
+| 🥟 豆包 AI | 2张 | 思维链推理，深度分析 | 复杂推理、学术研究 |
+| 🚀 XAI Grok | 2张 | 实时信息，幽默风格 | 新闻分析、创意写作 |
+| 🌟 Gemini AI | 2张 | 多模态理解，精准分析 | 图像理解、代码生成 |
+
+### 🎨 图像生成节点功能对比
+
+| 节点 | 输入图片 | 输出 | 主要特性 |
+|------|----------|------|----------|
+| 🌐 Gemini Image Preview | 5张 | 图像+文本 | 图像编辑、风格转换 |
+| 🍌 BizyAir NanoBanana | 1张 | 图像+状态 | 快速生成、需充值金币 |
+| 🌈 BizyAir Seedream4 | 1张 | 图像+状态 | 高质量生成、需充值金币 |
+| 🥟 豆包 SEEDREAM 4.0 | 10张 | 图像+状态 | 多图合成、专业级生成 |
+
+## 🛠️ 安装和使用
+
+### 1. 安装插件
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/zealman2025/Comfyui-MyApi.git
+```
+
+### 2. 安装依赖
+大多数情况下无需手动安装依赖，ComfyUI的其他插件通常已包含所需依赖。
+
+如需手动安装：
+
+**官方版ComfyUI:**
+```bash
+G:\ComfyUI安装目录\python_embeded\python.exe -m pip install openai google-genai requests Pillow numpy
+```
+
+**秋叶版ComfyUI:**
+```bash
+G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requests Pillow numpy
+```
+
+### 3. 配置API密钥
+- 将`config.json.example`重命名为`config.json`
+- 在配置文件中填入您的API密钥，或在节点中直接输入
+
+### 4. 重启ComfyUI
+修改配置后需要重启ComfyUI以加载新设置
+
+## 💡 使用技巧
+
+### 🔑 API密钥管理
+- **日常使用**: 在config.json中配置常用密钥
+- **临时测试**: 在节点输入框中输入测试密钥
+- **分享工作流**: 清空节点输入框，避免泄露密钥
+
+### 🖼️ 图像输入优化
+- **单图分析**: 连接到第一个图像输入
+- **对比分析**: 使用多个图像输入进行对比
+- **图像格式**: 支持PNG、JPEG、WEBP等常见格式
+- **分辨率**: 建议使用适中分辨率，避免过大图像
+
+### ⚙️ 参数调优
+- **Temperature**: 控制输出随机性 (0.0-2.0)
+- **Top_p**: 核采样参数 (0.0-1.0)
+- **Max_tokens**: 最大输出长度
+- **Seed**: 种子值，确保输出一致性
+
+## 🔧 自定义配置
+
+### 添加新模型
+在对应的模型类别下添加新模型：
 ```json
 "qwen": {
     "existing-models": "...",
-    "qwen-new-model": "新模型显示名称"
+    "new-model-id": "新模型显示名称"
 }
 ```
 
-### 2. 添加豆包模型  
-在 `models.doubao` 节点下添加：
+### 修改显示名称
 ```json
-"doubao": {
-    "existing-models": "...",
-    "doubao-new-model": "新豆包模型"
+"models": {
+    "qwen": {
+        "qwen-vl-plus": "自定义显示名称"
+    }
 }
 ```
 
-### 3. 添加豆包图像编辑模型
-在 `models.doubao_image_edit` 节点下添加：
-```json
-"doubao_image_edit": {
-    "existing-models": "...",
-    "doubao-new-edit-model": "新图像编辑模型"
-}
-```
+## ⚠️ 注意事项
 
-### 4. 添加豆包文生图模型
-在 `models.doubao_text_to_image` 节点下添加：
-```json
-"doubao_text_to_image": {
-    "existing-models": "...",
-    "doubao-new-t2i-model": "新文生图模型"
-}
-```
+### 配置文件
+- 确保JSON格式正确
+- 使用UTF-8编码保存
+- 修改后需重启ComfyUI
+- 建议备份原配置文件
 
-### 5. 添加XAI模型
-在 `models.xai` 节点下添加：
-```json
-"xai": {
-    "existing-models": "...",
-    "grok-new-model": "新Grok模型"
-}
-```
+### 网络要求
+- **国内服务** (Qwen、豆包): 直接访问
+- **国外服务** (Gemini、XAI、OpenRouter): 需要稳定的网络连接
 
-### 6. 添加Gemini模型
-在 `models.gemini` 节点下添加：
-```json
-"gemini": {
-    "existing-models": "...",
-    "gemini-new-model": "新Gemini模型"
-}
-```
+### 使用限制
+- 遵守各API服务的使用条款
+- 注意API调用频率限制
+- 不同模型有不同的token限制
 
-## 修改API密钥
+## 🐛 故障排除
 
-直接修改对应的API密钥字段：
-```json
-{
-    "qwen_api_key": "新的qwen密钥",
-    "doubao_api_key": "新的豆包密钥",
-    "xai_api_key": "新的xai密钥",
-    "gemini_api_key": "新的gemini密钥"
-}
-```
+### 常见问题
+1. **模型显示undefined**: 检查config.json格式和模型配置
+2. **API调用失败**: 验证API密钥和网络连接
+3. **图像处理错误**: 检查图像格式和大小
+4. **依赖缺失**: 手动安装所需Python包
 
-## 注意事项
+### 调试信息
+插件提供详细的日志输出，查看ComfyUI控制台获取调试信息：
+- `[NodeName] 使用输入的API密钥` - 使用节点输入的密钥
+- `[NodeName] 使用config.json中的API密钥` - 使用配置文件密钥
+- `[NodeName] 加载模型: {...}` - 模型加载状态
 
-1. **格式正确性**：确保JSON格式正确，注意逗号和引号
-2. **编码格式**：建议使用UTF-8编码保存文件
-3. **重启加载**：修改配置后需要重启ComfyUI才能生效
-4. **备份配置**：建议修改前备份原配置文件
-5. **模型ID**：模型ID（键名）必须是API支持的真实模型名称
-6. **显示名称**：显示名称（键值）可以自定义，用于界面显示
+## 📄 许可证
 
-## 豆包文生图节点尺寸说明
+本项目采用MIT许可证，详见LICENSE文件。
 
-豆包文生图节点支持自定义宽度和高度：
-- **宽度范围**：64-2048像素，步长8
-- **高度范围**：64-2048像素，步长8  
-- **默认尺寸**：768x1024（竖版）
-- **常用尺寸参考**：
-  - 768x1024 (3:4竖版)
-  - 1024x768 (4:3横版)
-  - 1024x1024 (1:1正方形)
-  - 1024x576 (16:9宽屏)
-  - 576x1024 (9:16手机竖屏)
+## 🤝 贡献
 
-## Gemini节点使用说明
+欢迎提交Issue和Pull Request来改进这个项目！
 
-### API密钥获取
-1. Gemini(使用需要魔法)访问https://aistudio.google.com/
-2. Xai(使用需要魔法)访问https://x.ai/api
-3. QWEN访问https://bailian.console.aliyun.com/?tab=api#/api
-4. Doubao访问https://www.volcengine.com/experience/ark
+## 📞 支持
 
-### 节点功能
-- ✅ 文本生成和对话
-- ✅ 图像理解和分析
-- ✅ 支持多轮对话
-- ✅ 可调节温度、top_p、top_k等参数
-- ✅ 种子控制，支持确定性输出
-
-### 依赖安装
-一般情况你无需安装依赖，comfyui的很多插件已经涵盖了该项目所使用依赖
-如果不确定是否依赖装了 可以打开cmd输入命令
-
-**如果你是官方版comfyui
-G:\ComfyU安装根目录\python_embeded\python.exe -m pip install openai google-genai requests Pillow numpy
-
-**如果你是秋叶版本comfyui
-G:\ComfyU安装根目录\python\python.exe -m pip install openai google-genai requests Pillow numpy
-
-这个命令会安装缺失的包,跳过已安装的版本,不强制升级已有依赖,不卸载重装
-
-### 使用注意事项
-1. **API密钥**：确保在config.json中正确配置api_key
-2. **网络连接**：需要稳定的网络连接到Google服务
-3. **图像格式**：支持PNG、JPEG、WEBP等常见格式
-4. **Token限制**：不同模型有不同的输入输出token限制
+如有问题或建议，请在GitHub上提交Issue。

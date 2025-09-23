@@ -38,16 +38,27 @@ def load_xai_models_from_config():
     """从config.json加载XAI模型配置"""
     try:
         config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+        print(f"[XAINode] Loading config from: {config_path}")
+        print(f"[XAINode] Config file exists: {os.path.exists(config_path)}")
+
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
             models = config.get('models', {})
             xai_models = models.get('xai', {})
-            # 移除默认模型回退
+            print(f"[XAINode] Loaded XAI models: {xai_models}")
+            print(f"[XAINode] XAI model keys: {list(xai_models.keys())}")
             return xai_models
     except Exception as e:
-        print(f"Error loading XAI models from config: {str(e)}")
-        # 不再提供默认模型
-        return {}
+        print(f"[XAINode] Error loading XAI models from config: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # 提供默认模型作为回退
+        default_models = {
+            "grok-2-vision-1212": "Grok 2 Vision 1212",
+            "grok-4": "grok-4"
+        }
+        print(f"[XAINode] Using default models: {default_models}")
+        return default_models
 
 # 加载模型配置
 XAI_MODELS = load_xai_models_from_config()
@@ -55,21 +66,46 @@ XAI_MODELS = load_xai_models_from_config()
 class XAINode:
     def __init__(self):
         self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        self.api_key = self._load_api_key()
-        
-    def _load_api_key(self):
+
+    def _get_api_key(self, input_api_key):
+        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
+        # 定义无效的占位符文本
+        invalid_placeholders = [
+            "YOUR_API_KEY",
+            "你的apikey",
+            "your_api_key_here",
+            "请输入API密钥",
+            "请输入你的API密钥",
+            ""
+        ]
+
+        # 如果输入了有效的API密钥，优先使用
+        if (input_api_key and
+            input_api_key.strip() and
+            input_api_key.strip() not in invalid_placeholders):
+            print(f"[XAINode] 使用输入的API密钥")
+            return input_api_key.strip()
+
+        # 否则从config.json读取
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                return config.get('xai_api_key', '')
+                config_api_key = config.get('xai_api_key', '').strip()
+                if config_api_key:
+                    print(f"[XAINode] 使用config.json中的API密钥")
+                    return config_api_key
+                else:
+                    print(f"[XAINode] config.json中未找到xai_api_key")
+                    return ''
         except Exception as e:
-            print(f"Error loading XAI API key: {str(e)}")
+            print(f"[XAINode] 读取config.json失败: {str(e)}")
             return ''
 
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
+                "api_key": ("STRING", {"default": "", "multiline": False}),
                 "model": (list(XAI_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
                 "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 8192}),
@@ -218,7 +254,7 @@ class XAINode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None, image_2=None):
+    def process(self, api_key, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None, image_2=None):
         """主处理函数"""
         
         # 检查依赖
@@ -234,9 +270,14 @@ class XAINode:
             if not HAS_OPENAI:
                 return ("Error: openai 软件包未安装。请使用以下命令安装它 'pip install openai'",)
                 
+            # 获取实际使用的API密钥
+            actual_api_key = self._get_api_key(api_key)
+            if not actual_api_key:
+                return ("Error: 请输入API密钥或在config.json中配置xai_api_key。请访问 https://x.ai/ 获取API密钥。",)
+
             # 使用OpenAI兼容API调用XAI
             client = OpenAI(
-                api_key=self.api_key,
+                api_key=actual_api_key,
                 base_url="https://api.x.ai/v1"
             )
 
