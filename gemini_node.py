@@ -7,15 +7,11 @@ def load_gemini_models_from_config():
     """从config.json加载Gemini模型配置"""
     try:
         config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        print(f"[GeminiNode] Loading config from: {config_path}")
-        print(f"[GeminiNode] Config file exists: {os.path.exists(config_path)}")
 
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
             models = config.get('models', {})
             gemini_models = models.get('gemini', {})
-            print(f"[GeminiNode] Loaded Gemini models: {gemini_models}")
-            print(f"[GeminiNode] Gemini model keys: {list(gemini_models.keys())}")
             return gemini_models
     except Exception as e:
         print(f"[GeminiNode] Error loading Gemini models from config: {str(e)}")

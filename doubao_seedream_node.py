@@ -31,6 +31,31 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
+# 从配置文件加载模型配置
+def load_doubao_seedream_models_from_config():
+    """从config.json加载豆包SEEDREAM模型配置"""
+    try:
+        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            models = config.get('models', {})
+            seedream_models = models.get('doubao_seedream', {})
+            if seedream_models:
+                return seedream_models
+            # 如果没有配置，返回默认模型
+            return {
+                "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
+            }
+    except Exception as e:
+        print(f"[DoubaoSeedreamNode] 加载配置失败: {str(e)}")
+        traceback.print_exc()
+        return {
+            "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
+        }
+
+# 加载模型配置
+DOUBAO_SEEDREAM_MODELS = load_doubao_seedream_models_from_config()
+
 class DoubaoSeedreamNode:
     """豆包 SEEDREAM 4.0 图像生成节点"""
     
@@ -96,7 +121,7 @@ class DoubaoSeedreamNode:
                 "size": (size_options, {"default": "Custom"}),
                 "custom_width": ("INT", {"default": 1920, "min": 1024, "max": 4096, "step": 16}),
                 "custom_height": ("INT", {"default": 1080, "min": 1024, "max": 4096, "step": 16}),
-                "model": (["doubao-seedream-4-0-250828"], {"default": "doubao-seedream-4-0-250828"}),
+                "model": (list(DOUBAO_SEEDREAM_MODELS.keys()), {"default": list(DOUBAO_SEEDREAM_MODELS.keys())[0] if DOUBAO_SEEDREAM_MODELS else "doubao-seedream-4-0-250828"}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "watermark": ("BOOLEAN", {"default": False}),
                 "stream": ("BOOLEAN", {"default": True}),
@@ -229,13 +254,59 @@ class DoubaoSeedreamNode:
             else:
                 raise ValueError(f"Unsupported image type: {type(image)}")
             
-            # 将PIL图像转换为PNG格式的base64
-            buffered = io.BytesIO()
-            pil_image.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-            
+            # 豆包接口限制原始图像最大10MB。考虑到Base64会膨胀约33%，我们将原始数据控制在7MB左右。
+            max_bytes = 10 * 1024 * 1024
+            target_raw_bytes = int(max_bytes * 0.7)  # 约7MB
+            min_dim = 512
+
+            def save_to_buffer(img, fmt, **save_kwargs):
+                buf = io.BytesIO()
+                img.save(buf, format=fmt, **save_kwargs)
+                return buf, buf.tell()
+
+            buffer, raw_size = save_to_buffer(pil_image, "PNG", optimize=True)
+            image_format = "PNG"
+
+            if raw_size > target_raw_bytes:
+                print(f"Warning: Image raw size ({raw_size / 1024 / 1024:.2f}MB) exceeds target {target_raw_bytes / 1024 / 1024:.2f}MB. Compressing...")
+
+            resize_attempts = 0
+            while raw_size > target_raw_bytes and (pil_image.width > min_dim or pil_image.height > min_dim) and resize_attempts < 5:
+                scale_factor = max((target_raw_bytes / raw_size) ** 0.5, 0.3)
+                new_width = max(int(pil_image.width * scale_factor), min_dim)
+                new_height = max(int(pil_image.height * scale_factor), min_dim)
+                if new_width == pil_image.width and new_height == pil_image.height:
+                    new_width = max(int(pil_image.width * 0.75), min_dim)
+                    new_height = max(int(pil_image.height * 0.75), min_dim)
+                pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                resize_attempts += 1
+                print(f"Resized image attempt {resize_attempts}: {new_width}x{new_height}")
+                buffer, raw_size = save_to_buffer(pil_image, "PNG", optimize=True)
+                image_format = "PNG"
+
+            if raw_size > target_raw_bytes:
+                print("PNG still too large, switching to JPEG compression...")
+                quality = 90
+                jpeg_attempts = 0
+                while raw_size > target_raw_bytes and quality >= 40:
+                    buffer, raw_size = save_to_buffer(pil_image, "JPEG", quality=quality, optimize=True)
+                    image_format = "JPEG"
+                    jpeg_attempts += 1
+                    print(f"JPEG compression attempt {jpeg_attempts}: quality={quality}, size={raw_size / 1024 / 1024:.2f}MB")
+                    quality -= 5
+
+            if raw_size > target_raw_bytes:
+                raise ValueError(f"Image is too large even after compression ({raw_size / 1024 / 1024:.2f}MB). Please use a smaller image or resize manually.")
+
+            buffer.seek(0)
+            img_b64_bytes = base64.b64encode(buffer.getvalue())
+            img_b64_len = len(img_b64_bytes)
+            print(f"Final raw size: {raw_size / 1024 / 1024:.2f}MB, base64 size: {img_b64_len / 1024 / 1024:.2f}MB, format: {image_format}")
+            img_str = img_b64_bytes.decode('utf-8')
+
+            mime_type = "image/jpeg" if image_format == "JPEG" else "image/png"
             print(f"Successfully encoded image to base64 (length: {len(img_str)})")
-            return f"data:image/png;base64,{img_str}"
+            return f"data:{mime_type};base64,{img_str}"
             
         except Exception as e:
             print(f"Error encoding image: {str(e)}")

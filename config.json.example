@@ -5,14 +5,24 @@
     "gemini_api_key": "你的apikey",
     "openrouter_api_key": "你的apikey",
     "bizyair_api_key": "你的apikey",
+    "deepseek_api_key": "你的apikey",
     "models": {
         "qwen": {
-            "qwen-vl-plus": "Qwen VL Plus",
-            "qwen-vl-max": "Qwen VL Max"
+            "qwen3-vl-plus": "qwen3-vl-plus",
+            "qwen3-vl-flash": "qwen3-vl-flash"
+        },
+        "qwen_image_edit": {
+            "qwen-image-edit-plus": "Qwen Image Edit Plus"
         },
         "doubao": {
-            "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
-            "doubao-seed-1-6-250615": "豆包Seed1.6版"
+            "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
+            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015"
+        },
+        "doubao_translation": {
+            "doubao-seed-translation-250915": "豆包Seed翻译模型"
+        },
+        "doubao_seedream": {
+            "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
         },
 
         "xai": {
@@ -22,6 +32,10 @@
         "gemini": {
             "gemini-2.5-pro": "Gemini 2.5 pro",
             "gemini-2.5-flash": "Gemini 2.5 flash"
+        },
+        "deepseek": {
+            "deepseek-chat": "DeepSeek Chat",
+            "deepseek-reasoner": "DeepSeek Reasoner"
         }
     }
 } 

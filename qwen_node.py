@@ -38,15 +38,11 @@ def load_qwen_models_from_config():
     """从config.json加载Qwen模型配置"""
     try:
         config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        print(f"[QwenNode] Loading config from: {config_path}")
-        print(f"[QwenNode] Config file exists: {os.path.exists(config_path)}")
 
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
             models = config.get('models', {})
             qwen_models = models.get('qwen', {})
-            print(f"[QwenNode] Loaded Qwen models: {qwen_models}")
-            print(f"[QwenNode] Qwen model keys: {list(qwen_models.keys())}")
             return qwen_models
     except Exception as e:
         print(f"[QwenNode] Error loading Qwen models from config: {str(e)}")
@@ -227,11 +223,49 @@ class QwenNode:
             else:
                 raise ValueError(f"Unsupported image type: {type(image)}")
             
-            # 将PIL图像转换为JPEG格式的base64
-            buffered = io.BytesIO()
-            pil_image.save(buffered, format="JPEG", quality=95)
-            img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-            
+            # 控制原始图像体积，避免Base64后超过接口限制（默认目标~7MB）
+            max_bytes = 10 * 1024 * 1024
+            target_raw_bytes = int(max_bytes * 0.7)
+            min_dim = 512
+
+            def save_to_buffer(img, fmt="JPEG", **save_kwargs):
+                buf = io.BytesIO()
+                img.save(buf, format=fmt, **save_kwargs)
+                return buf, buf.tell()
+
+            buffer, raw_size = save_to_buffer(pil_image, "JPEG", quality=95, optimize=True)
+            if raw_size > target_raw_bytes:
+                print(f"Warning: Image raw size ({raw_size / 1024 / 1024:.2f}MB) exceeds target {target_raw_bytes / 1024 / 1024:.2f}MB. Compressing...")
+
+            resize_attempts = 0
+            while raw_size > target_raw_bytes and (pil_image.width > min_dim or pil_image.height > min_dim) and resize_attempts < 5:
+                scale_factor = max((target_raw_bytes / raw_size) ** 0.5, 0.3)
+                new_width = max(int(pil_image.width * scale_factor), min_dim)
+                new_height = max(int(pil_image.height * scale_factor), min_dim)
+                if new_width == pil_image.width and new_height == pil_image.height:
+                    new_width = max(int(pil_image.width * 0.75), min_dim)
+                    new_height = max(int(pil_image.height * 0.75), min_dim)
+                pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                resize_attempts += 1
+                print(f"Resized image attempt {resize_attempts}: {new_width}x{new_height}")
+                buffer, raw_size = save_to_buffer(pil_image, "JPEG", quality=90, optimize=True)
+
+            quality = 90
+            jpeg_attempts = 0
+            while raw_size > target_raw_bytes and quality >= 40:
+                buffer, raw_size = save_to_buffer(pil_image, "JPEG", quality=quality, optimize=True)
+                jpeg_attempts += 1
+                print(f"JPEG compression attempt {jpeg_attempts}: quality={quality}, size={raw_size / 1024 / 1024:.2f}MB")
+                quality -= 5
+
+            if raw_size > target_raw_bytes:
+                raise ValueError(f"Image is too large even after compression ({raw_size / 1024 / 1024:.2f}MB). Please use a smaller image or resize manually.")
+
+            buffer.seek(0)
+            img_bytes = buffer.getvalue()
+            img_str = base64.b64encode(img_bytes).decode('utf-8')
+            base64_size_mb = len(img_str) / 1024 / 1024
+            print(f"Final raw size: {raw_size / 1024 / 1024:.2f}MB, base64 size: {base64_size_mb:.2f}MB")
             print(f"Successfully encoded image to base64 (length: {len(img_str)})")
             return img_str
             

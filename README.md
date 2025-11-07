@@ -9,7 +9,7 @@
 
 - 🔑 **双重API密钥机制** - 支持节点输入和配置文件两种密钥管理方式
 - 🖼️ **多模态支持** - 文本生成、图像理解、图像生成一应俱全
-- 🎯 **多服务集成** - 支持Qwen、豆包、XAI Grok、Gemini、OpenRouter等主流AI服务
+- 🎯 **多服务集成** - 支持Qwen、豆包、DeepSeek、XAI Grok、Gemini、OpenRouter等主流AI服务
 - 🛠️ **灵活配置** - 可自定义模型列表和参数设置
 - 🔄 **智能回退** - 配置加载失败时自动使用默认模型
 - 📝 **详细日志** - 完整的调试信息和错误提示
@@ -19,14 +19,21 @@
 ### 📝 文本生成节点
 - **🍭 Qwen AI** - 阿里通义千问，支持2张图片输入
 - **🥟 豆包 AI** - 字节跳动豆包，支持2张图片输入
+- **🍭 DeepSeek V3.2 Exp** - DeepSeek V3.2实验版，支持深度推理
 - **🚀 XAI Grok** - xAI的Grok模型，支持2张图片输入
 - **🌟 Gemini AI** - Google Gemini，支持2张图片输入
+
+### 🌐 翻译节点
+- **🥟 Doubao-Seed-Translation | 豆包翻译模型** - 豆包Seed翻译模型，支持30+种语言互译
 
 ### 🎨 图像生成节点
 - **🌐 Gemini 2.5 Flash Image Preview** - 通过OpenRouter调用，支持5张图片输入
 - **🍌 BizyAir NanoBanana** - BizyAir图像生成服务，需BizyAir.cn充值金币
 - **🌈 BizyAir Seedream4** - BizyAir高级图像生成，需BizyAir.cn充值金币
 - **🥟 豆包 SEEDREAM 4.0** - 豆包图像生成，支持10张图片输入
+
+### ✏️ 图像编辑节点
+- **🍭 Qwen Image Edit Plus** - Qwen图像编辑模型，支持1-3张图片输入，智能图像编辑和合成
 
 ## 🔑 双重API密钥机制
 
@@ -58,14 +65,24 @@
     "gemini_api_key": "你的apikey",
     "openrouter_api_key": "你的apikey",
     "bizyair_api_key": "你的apikey",
+    "deepseek_api_key": "你的apikey",
     "models": {
         "qwen": {
-            "qwen-vl-plus": "Qwen VL Plus",
-            "qwen-vl-max": "Qwen VL Max"
+            "qwen3-vl-plus": "qwen3-vl-plus",
+            "qwen3-vl-flash": "qwen3-vl-flash"
+        },
+        "qwen_image_edit": {
+            "qwen-image-edit-plus": "Qwen Image Edit Plus"
         },
         "doubao": {
             "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
             "doubao-seed-1-6-250615": "豆包Seed1.6版"
+        },
+        "doubao_translation": {
+            "doubao-seed-translation-250915": "豆包Seed翻译模型"
+        },
+        "doubao_seedream": {
+            "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
         },
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
@@ -74,6 +91,10 @@
         "gemini": {
             "gemini-2.5-pro": "Gemini 2.5 pro",
             "gemini-2.5-flash": "Gemini 2.5 flash"
+        },
+        "deepseek": {
+            "deepseek-chat": "DeepSeek Chat",
+            "deepseek-reasoner": "DeepSeek Reasoner"
         }
     }
 }
@@ -111,6 +132,11 @@
 - **说明**: BizyAir图像生成平台，需要充值金币，国内可直接访问
 - **配置**: `bizyair_api_key`
 
+### 🍭 DeepSeek
+- **官网**: https://platform.deepseek.com/
+- **说明**: DeepSeek AI平台，支持深度推理模型，国内可直接访问
+- **配置**: `deepseek_api_key`
+
 ## 📋 节点详细功能
 
 ### 📝 文本生成节点功能对比
@@ -119,8 +145,15 @@
 |------|----------|----------|----------|
 | 🍭 Qwen AI | 2张 | 中文优化，响应快速 | 中文对话、文档分析 |
 | 🥟 豆包 AI | 2张 | 思维链推理，深度分析 | 复杂推理、学术研究 |
+| 🍭 DeepSeek V3.2 Exp | 0张 | 深度推理，代码生成 | 代码编写、逻辑推理 |
 | 🚀 XAI Grok | 2张 | 实时信息，幽默风格 | 新闻分析、创意写作 |
 | 🌟 Gemini AI | 2张 | 多模态理解，精准分析 | 图像理解、代码生成 |
+
+### 🌐 翻译节点功能
+
+| 节点 | 支持语言 | 主要特性 | 适用场景 |
+|------|----------|----------|----------|
+| 🥟 豆包翻译模型 | 30+种 | 高质量翻译，支持多种语言对 | 文档翻译、多语言内容处理 |
 
 ### 🎨 图像生成节点功能对比
 
@@ -130,6 +163,12 @@
 | 🍌 BizyAir NanoBanana | 1张 | 图像+状态 | 快速生成、需充值金币 |
 | 🌈 BizyAir Seedream4 | 1张 | 图像+状态 | 高质量生成、需充值金币 |
 | 🥟 豆包 SEEDREAM 4.0 | 10张 | 图像+状态 | 多图合成、专业级生成 |
+
+### ✏️ 图像编辑节点功能对比
+
+| 节点 | 输入图片 | 输出 | 主要特性 |
+|------|----------|------|----------|
+| 🍭 Qwen Image Edit Plus | 1-3张 | 图像+状态 | 智能编辑、多图合成、姿势迁移 |
 
 ## 🛠️ 安装和使用
 
@@ -146,12 +185,12 @@ git clone https://github.com/zealman2025/Comfyui-MyApi.git
 
 **官方版ComfyUI:**
 ```bash
-G:\ComfyUI安装目录\python_embeded\python.exe -m pip install openai google-genai requests Pillow numpy
+G:\ComfyUI安装目录\python_embeded\python.exe -m pip install openai google-genai requests Pillow numpy dashscope
 ```
 
 **秋叶版ComfyUI:**
 ```bash
-G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requests Pillow numpy
+G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requests Pillow numpy dashscope
 ```
 
 ### 3. 配置API密钥
@@ -195,7 +234,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 ```json
 "models": {
     "qwen": {
-        "qwen-vl-plus": "自定义显示名称"
+        "qwen3-vl-plus": "自定义显示名称"
     }
 }
 ```
@@ -209,7 +248,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 - 建议备份原配置文件
 
 ### 网络要求
-- **国内服务** (Qwen、豆包): 直接访问
+- **国内服务** (Qwen、豆包、DeepSeek): 直接访问
 - **国外服务** (Gemini、XAI、OpenRouter): 需要稳定的网络连接
 
 ### 使用限制
