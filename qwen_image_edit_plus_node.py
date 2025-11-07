@@ -203,8 +203,13 @@ class QwenImageEditPlusNode:
             
             print(f"[QwenImageEditPlusNode] 下载图像: {image_url}")
             
-            # 使用流式下载，设置300秒超时（根据官方示例）
-            response = requests.get(image_url, stream=True, timeout=300)
+            # 使用流式下载，设置300秒超时（根据官方示例）- 禁用代理
+            response = requests.get(
+                image_url, 
+                stream=True, 
+                timeout=300,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
             response.raise_for_status()
             
             # 使用 iter_content 进行流式下载
@@ -343,8 +348,14 @@ class QwenImageEditPlusNode:
             print(f"[QwenImageEditPlusNode] 请求URL: {url}")
             print(f"[QwenImageEditPlusNode] 请求体结构: model, input.messages, parameters")
             
-            # 发送 HTTP 请求
-            response = requests.post(url, headers=headers, json=request_body, timeout=300)
+            # 发送 HTTP 请求 - 禁用代理，因为Qwen是国内服务
+            response = requests.post(
+                url, 
+                headers=headers, 
+                json=request_body, 
+                timeout=300,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
 
             print(f"[QwenImageEditPlusNode] 响应状态码: {response.status_code}")
             

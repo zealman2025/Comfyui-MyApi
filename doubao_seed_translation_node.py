@@ -188,7 +188,14 @@ class DoubaoSeedTranslationNode:
             }
 
             print(f"[DoubaoSeedTranslationNode] 发送请求到: {url}")
-            response = requests.post(url, headers=headers, json=payload, timeout=60)
+            # 禁用代理，因为豆包是国内服务，通常不需要代理
+            response = requests.post(
+                url, 
+                headers=headers, 
+                json=payload, 
+                timeout=60,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
             
             print(f"[DoubaoSeedTranslationNode] 响应状态码: {response.status_code}")
 

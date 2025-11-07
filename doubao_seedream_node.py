@@ -321,8 +321,12 @@ class DoubaoSeedreamNode:
             
             print(f"Downloading image from URL: {image_url}")
             
-            # 下载图像
-            response = requests.get(image_url, timeout=60)
+            # 下载图像 - 禁用代理
+            response = requests.get(
+                image_url, 
+                timeout=60,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
             response.raise_for_status()
             
             # 从字节流创建PIL图像
@@ -506,8 +510,15 @@ class DoubaoSeedreamNode:
             print("调用豆包 SEEDREAM 4.0 API...")
             print(f"请求参数: {list(request_body.keys())}")
             
-            # 发送请求
-            response = requests.post(url, headers=headers, json=request_body, timeout=120, stream=stream)
+            # 发送请求 - 禁用代理，因为豆包是国内服务
+            response = requests.post(
+                url, 
+                headers=headers, 
+                json=request_body, 
+                timeout=120, 
+                stream=stream,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
             
             print(f"响应状态码: {response.status_code}")
             

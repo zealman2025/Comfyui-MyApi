@@ -394,7 +394,15 @@ class DoubaoNode:
                 payload["extra_body"] = {"thinking": {"type": api_thinking_mode}}
                 print(f"深度思考模式: {thinking_mode} (API值: {api_thinking_mode})")
             
-            resp = requests.post(url, headers=headers, json=payload, timeout=timeout_value)
+            # 禁用代理，因为豆包是国内服务，通常不需要代理
+            # 如果系统设置了代理但代理不可用，会导致连接失败
+            resp = requests.post(
+                url, 
+                headers=headers, 
+                json=payload, 
+                timeout=timeout_value,
+                proxies={"http": None, "https": None}  # 禁用代理
+            )
             print(f"Response status code: {resp.status_code}")
             if not resp.ok:
                 try:
