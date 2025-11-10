@@ -1,0 +1,640 @@
+{
+  "id": "435a956a-3c00-4c42-b286-c0211634320a",
+  "revision": 0,
+  "last_node_id": 10,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 6,
+      "type": "BizyAirNanoBananaNode",
+      "pos": [
+        -5910.388763028769,
+        595.195746001523
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "string",
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "BizyAirNanoBananaNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "使用英文版提示词更准确",
+        0,
+        "randomize"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 8,
+      "type": "DeepSeekV32ExpNode",
+      "pos": [
+        -7230.949110532322,
+        579.1066132874539
+      ],
+      "size": [
+        400,
+        286
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "DeepSeekV32ExpNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "deepseek-chat",
+        "你好，DeepSeek!",
+        "You are a helpful assistant.",
+        1,
+        2048,
+        1,
+        false
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 3,
+      "type": "DoubaoNode",
+      "pos": [
+        -6362.601697401455,
+        587.3541810378158
+      ],
+      "size": [
+        400,
+        300
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image_2",
+          "name": "image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "DoubaoNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "doubao-seed-1-6-vision-250815",
+        "Describe the image content in detail, without making comments or suggestions",
+        4096,
+        1,
+        0.7,
+        0,
+        "randomize",
+        "禁用"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 4,
+      "type": "DoubaoSeedreamNode",
+      "pos": [
+        -6356.879395358714,
+        1303.7325269672256
+      ],
+      "size": [
+        400,
+        484
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image2",
+          "name": "image2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image3",
+          "name": "image3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image4",
+          "name": "image4",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image5",
+          "name": "image5",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image6",
+          "name": "image6",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image7",
+          "name": "image7",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image8",
+          "name": "image8",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image9",
+          "name": "image9",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image10",
+          "name": "image10",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "string",
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "DoubaoSeedreamNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "一只可爱的小猫咪，坐在花园里，阳光明媚",
+        "Custom",
+        1920,
+        1080,
+        "doubao-seedream-4-0-250828",
+        0,
+        "randomize",
+        false,
+        true
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 5,
+      "type": "DoubaoSeedTranslationNode",
+      "pos": [
+        -6359.3369939352215,
+        989.9659773804802
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "translated_text",
+          "name": "translated_text",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "DoubaoSeedTranslationNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "doubao-seed-translation-250915",
+        "若夫淫雨霏霏，连月不开，阴风怒号，浊浪排空",
+        "zh",
+        "en"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 9,
+      "type": "QwenImageEditPlusNode",
+      "pos": [
+        -6807.275118558637,
+        985.0870641348077
+      ],
+      "size": [
+        400,
+        302
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image1",
+          "name": "image1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image2",
+          "name": "image2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image3",
+          "name": "image3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "string",
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "QwenImageEditPlusNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "qwen-image-edit-plus",
+        "图1中的女生穿着图2中的黑色裙子按图3的姿势坐下",
+        " ",
+        false,
+        0,
+        "randomize"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 7,
+      "type": "BizyAirSeedream4Node",
+      "pos": [
+        -5908.6392189871085,
+        1009.8032848457259
+      ],
+      "size": [
+        400,
+        252
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "label": "string",
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "BizyAirSeedream4Node",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "将兔子改为小猫",
+        "1K Square (1024x1024)",
+        1920,
+        1080,
+        0,
+        "randomize"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 10,
+      "type": "Note",
+      "pos": [
+        -7226.040467225786,
+        928.0379041032578
+      ],
+      "size": [
+        388.4028932033143,
+        424.2713473448017
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.4",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "🍭 Qwen (通义千问)\n官网: https://bailian.console.aliyun.com/?tab=api#/api\n说明: 阿里云百炼平台，国内可直接访问\n配置: qwen_api_key\n🥟 豆包 (Doubao)\n官网: https://www.volcengine.com/experience/ark\n说明: 字节跳动火山引擎，国内可直接访问\n配置: doubao_api_key\n🚀 XAI Grok\n官网: https://x.ai/api\n说明: xAI官方API，需要魔法上网\n配置: xai_api_key\n🌟 Gemini\n官网: https://aistudio.google.com/\n说明: Google AI Studio，需要魔法上网\n配置: gemini_api_key\n🌐 OpenRouter\n官网: https://openrouter.ai/\n说明: 多模型API聚合平台，支持支付宝和微信充值\n配置: openrouter_api_key\n🍌 BizyAir\n官网: https://bizyair.cn\n说明: BizyAir图像生成平台，需要充值金币，国内可直接访问\n配置: bizyair_api_key\n🍭 DeepSeek\n官网: https://platform.deepseek.com/\n说明: DeepSeek AI平台，支持深度推理模型，国内可直接访问\n配置: deepseek_api_key"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 1,
+      "type": "QwenNode",
+      "pos": [
+        -6796.289670827976,
+        570.5569937888952
+      ],
+      "size": [
+        400,
+        276
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image_2",
+          "name": "image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
+        "Node name for S&R": "QwenNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.4"
+        }
+      },
+      "widgets_values": [
+        "",
+        "qwen3-vl-plus",
+        "Describe the image content in detail, without making comments or suggestions",
+        4096,
+        1,
+        0.7,
+        0,
+        "randomize"
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    }
+  ],
+  "links": [],
+  "groups": [
+    {
+      "id": 1,
+      "title": "ZEALMAN MY API插件",
+      "bounding": [
+        -7344.7977608140845,
+        432.90004053177336,
+        2008.5447042636824,
+        1407.8549253005935
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "首次运行前将config.json.example改为config.json",
+      "bounding": [
+        -7341.622880756089,
+        148.19062536209782,
+        2009.8572657276818,
+        80
+      ],
+      "color": "#A88",
+      "font_size": 50,
+      "flags": {
+        "pinned": true
+      }
+    },
+    {
+      "id": 3,
+      "title": "插件下载地址https://github.com/zealman2025/Comfyui-MyApi",
+      "bounding": [
+        -7343.139983490187,
+        329.8259995249021,
+        2009.8652481872987,
+        80
+      ],
+      "color": "#3f789e",
+      "font_size": 50,
+      "flags": {
+        "pinned": true
+      }
+    },
+    {
+      "id": 4,
+      "title": "如在config.json填写apikey,则在工作流中可以不填写API，这样工作流分享时不泄露apikey",
+      "bounding": [
+        -7340.859280742494,
+        237.45753824337618,
+        2007.8955503597454,
+        80
+      ],
+      "color": "#8A8",
+      "font_size": 50,
+      "flags": {
+        "pinned": true
+      }
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 0.6588450000000093,
+      "offset": [
+        7891.302069953364,
+        31.14905032643736
+      ]
+    },
+    "frontendVersion": "1.28.8",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
