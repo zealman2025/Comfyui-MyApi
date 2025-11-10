@@ -3,4 +3,3 @@ google-genai
 requests
 Pillow
 numpy
-dashscope

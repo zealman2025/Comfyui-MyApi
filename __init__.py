@@ -1,3 +1,43 @@
+import os
+import subprocess
+import sys
+
+
+def _ensure_requirements_installed():
+    """
+    在首次加载节点时自动安装依赖。
+    若 requirements.txt 或 pip 执行失败，仅打印警告，继续加载，避免阻断 ComfyUI。
+    可以通过环境变量 COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1 跳过自动安装。
+    """
+    if os.environ.get("COMFYUI_MYAPI_SKIP_AUTO_INSTALL") == "1":
+        print("[Comfyui-MyApi] 跳过依赖自动安装（检测到环境变量 COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1）")
+        return
+
+    base_dir = os.path.dirname(os.path.realpath(__file__))
+    requirements_path = os.path.join(base_dir, "requirements.txt")
+    marker_path = os.path.join(base_dir, ".requirements_installed")
+
+    if not os.path.exists(requirements_path):
+        return
+
+    if os.path.exists(marker_path):
+        return
+
+    try:
+        print("[Comfyui-MyApi] 正在自动安装依赖...")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", requirements_path]
+        )
+        with open(marker_path, "w", encoding="utf-8") as marker:
+            marker.write("installed")
+        print("[Comfyui-MyApi] 依赖安装完成。")
+    except Exception as exc:
+        print(f"[Comfyui-MyApi] 自动安装依赖失败：{exc}")
+        print("请手动执行：pip install -r requirements.txt")
+
+
+_ensure_requirements_installed()
+
 from .qwen_node import NODE_CLASS_MAPPINGS as QWEN_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as QWEN_NODE_DISPLAY_NAME_MAPPINGS
 from .qwen_image_edit_plus_node import NODE_CLASS_MAPPINGS as QWEN_IMAGE_EDIT_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as QWEN_IMAGE_EDIT_NODE_DISPLAY_NAME_MAPPINGS
 from .doubao_node import NODE_CLASS_MAPPINGS as DOUBAO_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as DOUBAO_NODE_DISPLAY_NAME_MAPPINGS
