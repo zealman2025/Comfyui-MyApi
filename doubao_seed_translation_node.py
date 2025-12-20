@@ -265,6 +265,6 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DoubaoSeedTranslationNode": "🥟Doubao-Seed-Translation | 豆包翻译模型"
+    "DoubaoSeedTranslationNode": "🥟豆包翻译模型"
 }
 

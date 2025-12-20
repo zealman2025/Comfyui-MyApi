@@ -9,22 +9,24 @@
     "models": {
         "qwen": {
             "qwen3-vl-plus": "qwen3-vl-plus",
-            "qwen3-vl-flash": "qwen3-vl-flash"
+            "qwen3-vl-flash": "qwen3-vl-flash",
+            "qwen3-vl-max": "qwen3-vl-max"
+        },
+        "qwen_llm": {
+            "qwen3-max": "qwen3-max",
+            "qwen3-plus": "qwen3-plus"
         },
         "qwen_image_edit": {
             "qwen-image-edit-plus": "Qwen Image Edit Plus"
         },
         "doubao": {
             "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
-            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015"
+            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
+            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
         },
         "doubao_translation": {
             "doubao-seed-translation-250915": "豆包Seed翻译模型"
         },
-        "doubao_seedream": {
-            "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
-        },
-
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
 			"grok-4": "grok-4"

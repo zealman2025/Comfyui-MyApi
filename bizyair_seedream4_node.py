@@ -35,10 +35,10 @@ except ImportError:
     HAS_TORCH = False
     print("Warning: torch library not found. Some features may not work properly.")
 
-class BizyAirSeedream4Node:
+class BizyAirSeedream45Node:
     """
-    BizyAir Seedream4专用节点
-    专门用于调用BizyAir的Seedream4模型API
+    BizyAir Seedream4.5专用节点
+    专门用于调用BizyAir的Seedream4.5模型API
     支持图像输入、提示词、尺寸选择和自定义宽高
     """
 
@@ -83,7 +83,7 @@ class BizyAirSeedream4Node:
         if (input_api_key and
             input_api_key.strip() and
             input_api_key.strip() not in invalid_placeholders):
-            print(f"[BizyAirSeedream4] 使用输入的API密钥")
+            print(f"[BizyAirSeedream45] 使用输入的API密钥")
             return input_api_key.strip()
 
         # 否则从config.json读取
@@ -92,13 +92,13 @@ class BizyAirSeedream4Node:
                 config = json.load(f)
                 config_api_key = config.get('bizyair_api_key', '').strip()
                 if config_api_key:
-                    print(f"[BizyAirSeedream4] 使用config.json中的API密钥")
+                    print(f"[BizyAirSeedream45] 使用config.json中的API密钥")
                     return config_api_key
                 else:
-                    print(f"[BizyAirSeedream4] config.json中未找到bizyair_api_key")
+                    print(f"[BizyAirSeedream45] config.json中未找到bizyair_api_key")
                     return ''
         except Exception as e:
-            print(f"[BizyAirSeedream4] 读取config.json失败: {str(e)}")
+            print(f"[BizyAirSeedream45] 读取config.json失败: {str(e)}")
             return ''
 
     @classmethod
@@ -106,26 +106,20 @@ class BizyAirSeedream4Node:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
-                "prompt": ("STRING", {"multiline": True, "default": "将兔子改为小猫"}),
-                "size": ([
-                    "1K Square (1024x1024)",
-                    "2K Square (2048x2048)", 
-                    "4K Square (4096x4096)",
-                    "HD 16:9 (1920x1080)",
-                    "2K 16:9 (2560x1440)",
-                    "4K 16:9 (3840x2160)",
-                    "Portrait 9:16 (1080x1920)",
-                    "Portrait 3:4 (1536x2048)",
-                    "Landscape 4:3 (2048x1536)",
-                    "Ultra-wide 21:9 (3440x1440)",
-                    "Custom"
-                ], {"default": "1K Square (1024x1024)"}),
-                "custom_width": ("INT", {"default": 1920, "min": 1024, "max": 8192, "step": 16}),
-                "custom_height": ("INT", {"default": 1080, "min": 1024, "max": 8192, "step": 16}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
+                "size": (["2K", "4K", "Custom"], {"default": "2K"}),
+                "custom_width": ("INT", {"default": 2048, "min": 1024, "max": 4096, "step": 16}),
+                "custom_height": ("INT", {"default": 2048, "min": 1024, "max": 4096, "step": 16}),
+                "max_images": ("INT", {"default": 1, "min": 1, "max": 10}),
+                "optimize_prompt": (["enabled", "disabled"], {"default": "disabled"}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2147483647}),
             },
             "optional": {
                 "image": ("IMAGE",),
+                "image2": ("IMAGE",),
+                "image3": ("IMAGE",),
+                "image4": ("IMAGE",),
+                "image5": ("IMAGE",),
             }
         }
 
@@ -149,45 +143,54 @@ class BizyAirSeedream4Node:
             
         return missing_deps
 
+    def _validate_custom_size(self, width, height):
+        """验证自定义尺寸是否符合API要求
+        
+        要求：
+        - 总像素范围：[3686400, 16777216]
+        - 宽高比范围：[1/16, 16]
+        """
+        total_pixels = width * height
+        min_pixels = 3686400  # 2560x1440
+        max_pixels = 16777216  # 4096x4096
+        
+        aspect_ratio = width / height if height > 0 else 0
+        min_aspect_ratio = 1 / 16  # 0.0625
+        max_aspect_ratio = 16
+        
+        errors = []
+        
+        if total_pixels < min_pixels:
+            errors.append(f"总像素值 {total_pixels} 小于最小值 {min_pixels}")
+        if total_pixels > max_pixels:
+            errors.append(f"总像素值 {total_pixels} 大于最大值 {max_pixels}")
+        if aspect_ratio < min_aspect_ratio or aspect_ratio > max_aspect_ratio:
+            errors.append(f"宽高比 {aspect_ratio:.2f} 不在允许范围 [{min_aspect_ratio}, {max_aspect_ratio}]")
+        
+        return len(errors) == 0, errors
+
     def _parse_size_option(self, size_option, custom_width, custom_height):
-        """解析size选项，返回实际的width和height，确保最小值为1024"""
+        """解析size选项，返回实际的width和height"""
         if size_option == "Custom":
-            # 确保自定义尺寸不低于1024
-            width = max(custom_width, 1024)
-            height = max(custom_height, 1024)
-            if width != custom_width or height != custom_height:
-                print(f"Warning: Custom dimensions adjusted to minimum 1024. Original: {custom_width}x{custom_height}, Adjusted: {width}x{height}")
-            return width, height
-
-        # 从size选项中提取尺寸信息
+            # 验证自定义尺寸
+            is_valid, errors = self._validate_custom_size(custom_width, custom_height)
+            if not is_valid:
+                error_msg = "自定义尺寸不符合API要求：\n" + "\n".join(errors)
+                error_msg += f"\n提示：总像素应在 [{3686400}, {16777216}] 范围内，宽高比应在 [1/16, 16] 范围内"
+                raise ValueError(error_msg)
+            return custom_width, custom_height
+        
+        # 预设尺寸映射（根据用户提供的推荐值）
         size_mappings = {
-            "1K Square (1024x1024)": (1024, 1024),
-            "2K Square (2048x2048)": (2048, 2048),
-            "4K Square (4096x4096)": (4096, 4096),
-            "HD 16:9 (1920x1080)": (1920, 1080),
-            "2K 16:9 (2560x1440)": (2560, 1440),
-            "4K 16:9 (3840x2160)": (3840, 2160),
-            "Portrait 9:16 (1080x1920)": (1080, 1920),
-            "Portrait 3:4 (1536x2048)": (1536, 2048),
-            "Landscape 4:3 (2048x1536)": (2048, 1536),
-            "Ultra-wide 21:9 (3440x1440)": (3440, 1440),
+            "2K": (2048, 2048),  # 默认2K
+            "4K": (4096, 4096),   # 默认4K
         }
-
+        
         if size_option in size_mappings:
-            width, height = size_mappings[size_option]
-            # 确保预设尺寸也不低于1024（虽然预设都已经>=1024）
-            return max(width, 1024), max(height, 1024)
-
-        # 如果没有找到匹配的预设，尝试从字符串中解析
-        import re
-        match = re.search(r'\((\d+)x(\d+)\)', size_option)
-        if match:
-            width = max(int(match.group(1)), 1024)
-            height = max(int(match.group(2)), 1024)
-            return width, height
-
-        # 默认返回自定义尺寸（确保最小值）
-        return max(custom_width, 1024), max(custom_height, 1024)
+            return size_mappings[size_option]
+        
+        # 默认返回2K
+        return (2048, 2048)
 
     def _image_to_local_file(self, image):
         """将图像保存为本地文件并返回本地URL"""
@@ -436,7 +439,8 @@ class BizyAirSeedream4Node:
             print(traceback.format_exc())
             raise
 
-    def generate(self, api_key, prompt, size, custom_width, custom_height, seed, image=None):
+    def generate(self, api_key, prompt, size, custom_width, custom_height, max_images, optimize_prompt, seed,
+                 image=None, image2=None, image3=None, image4=None, image5=None):
         """生成图像"""
 
         # 获取实际使用的API密钥
@@ -455,11 +459,11 @@ class BizyAirSeedream4Node:
         
         # 生成随机种子（如果需要）
         if seed == 0:
-            seed = random.randint(1, 2**32 - 1)
+            seed = random.randint(1, 2147483647)  # API要求seed最大值为2147483647
         
         try:
             api_url = "https://api.bizyair.cn/w/v1/webapp/task/openapi/create"
-            print(f"BizyAir Seedream4 API request to: {api_url}")
+            print(f"BizyAir Seedream4.5 API request to: {api_url}")
             
             # 准备请求头
             headers = {
@@ -468,31 +472,54 @@ class BizyAirSeedream4Node:
             }
             
             # 构建input_values
-            # 根据API文档，需要包含model和size字段
             input_values = {
-                "17:BizyAir_Seedream4.model": "doubao-seedream-4-0-250828",  # 固定模型
-                "17:BizyAir_Seedream4.prompt": prompt,
-                "17:BizyAir_Seedream4.size": size  # 始终发送size字段
+                "20:BizyAir_Seedream4_5.prompt": prompt,
+                "20:BizyAir_Seedream4_5.model": "doubao-seedream-4-5-251128",  # Seedream4.5模型
+                "20:BizyAir_Seedream4_5.size": size,
+                "20:BizyAir_Seedream4_5.max_images": max_images,
+                "20:BizyAir_Seedream4_5.optimize_prompt": optimize_prompt
             }
             
             # 只有当size是"Custom"时才发送custom_width和custom_height
-            # 对于预设尺寸，size字段已经包含了尺寸信息，不需要额外的custom字段
             if size == "Custom":
-                input_values["17:BizyAir_Seedream4.custom_width"] = actual_width  # 使用数字，不是字符串
-                input_values["17:BizyAir_Seedream4.custom_height"] = actual_height  # 使用数字，不是字符串
+                input_values["20:BizyAir_Seedream4_5.custom_width"] = actual_width
+                input_values["20:BizyAir_Seedream4_5.custom_height"] = actual_height
             
-            # 如果有图像输入，添加图像（使用base64编码，自动压缩超过10MB的图像）
-            if image is not None:
-                image_base64 = self._image_to_base64(image)
-                if image_base64:
-                    input_values["18:LoadImage.image"] = image_base64
-                    print("Added input image to request (base64 encoded, auto-compressed if needed)")
-                else:
-                    print("Warning: Failed to convert input image to base64")
+            # 图片输入键名映射（按顺序）
+            image_key_mapping = [
+                "18:LoadImage.image",  # image
+                "21:LoadImage.image",  # image2
+                "23:LoadImage.image",  # image3
+                "22:LoadImage.image",  # image4
+                "24:LoadImage.image",  # image5
+            ]
+            
+            # 收集所有输入的图片
+            input_images = [image, image2, image3, image4, image5]
+            image_count = 0
+            
+            # 处理每个图片输入
+            for idx, img in enumerate(input_images):
+                if img is not None:
+                    image_base64 = self._image_to_base64(img)
+                    if image_base64:
+                        if idx < len(image_key_mapping):
+                            input_values[image_key_mapping[idx]] = image_base64
+                            image_count += 1
+                            print(f"Added input image {idx + 1} to request (key: {image_key_mapping[idx]})")
+                        else:
+                            print(f"Warning: Too many images, maximum {len(image_key_mapping)} images supported")
+                    else:
+                        print(f"Warning: Failed to convert input image {idx + 1} to base64")
+            
+            # 根据实际图片数量设置 inputcount
+            input_count = image_count if image_count > 0 else 1  # 如果没有图片，默认1
+            input_values["20:BizyAir_Seedream4_5.inputcount"] = input_count
+            print(f"Input count set to: {input_count} (images provided: {image_count})")
             
             # 构建请求数据
             data = {
-                "web_app_id": 36598,  # Seedream4的固定web_app_id
+                "web_app_id": 41504,  # Seedream4.5的固定web_app_id
                 "suppress_preview_output": False,
                 "input_values": input_values
             }
@@ -500,6 +527,7 @@ class BizyAirSeedream4Node:
             print(f"Request data: web_app_id={data['web_app_id']}, input_values count={len(input_values)}")
             print(f"Prompt: {prompt[:100]}...")
             print(f"Size: {size} ({actual_width}x{actual_height})")
+            print(f"Max images: {max_images}, Optimize prompt: {optimize_prompt}")
             
             # 发送请求（增加超时时间到120秒）
             response = requests.post(api_url, headers=headers, json=data, timeout=120)
@@ -558,19 +586,22 @@ class BizyAirSeedream4Node:
             # 构建状态信息
             status_info = {
                 "status": "success",
-                "web_app_id": 36598,
+                "web_app_id": 41504,
                 "prompt": prompt,
                 "size": size,
                 "dimensions": f"{actual_width}x{actual_height}",
+                "max_images": max_images,
+                "optimize_prompt": optimize_prompt,
                 "seed": seed,
                 "image_url": image_url,
                 "cost_time": result.get("cost_times", {}).get("total_cost_time", 0),
                 "request_id": result.get("request_id", "")
             }
             
-            status_text = f"✅ Seedream4生成成功\n"
+            status_text = f"✅ Seedream4.5生成成功\n"
             status_text += f"提示词: {prompt[:50]}...\n"
             status_text += f"尺寸: {size} ({actual_width}x{actual_height})\n"
+            status_text += f"最大图像数: {max_images}, 优化提示词: {optimize_prompt}\n"
             status_text += f"种子: {seed}\n"
             status_text += f"耗时: {status_info['cost_time']}ms\n"
             status_text += f"请求ID: {status_info['request_id']}"
@@ -590,9 +621,9 @@ class BizyAirSeedream4Node:
 
 # 节点映射
 NODE_CLASS_MAPPINGS = {
-    "BizyAirSeedream4Node": BizyAirSeedream4Node
+    "BizyAirSeedream45Node": BizyAirSeedream45Node
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "BizyAirSeedream4Node": "🌐BizyAir Seedream4 (需BizyAir.cn充值金币)"
+    "BizyAirSeedream45Node": "🌐BizyAir Seedream 4.5 (需BizyAir.cn充值金币)"
 }

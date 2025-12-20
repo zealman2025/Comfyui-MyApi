@@ -103,7 +103,8 @@ class XAINode:
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "model": (list(XAI_MODELS.keys()),),
-                "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
+                "system": ("STRING", {"multiline": True, "default": "You are a helpful assistant that accurately describes images and answers questions."}),
+                "user": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
                 "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 8192}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
@@ -288,7 +289,7 @@ class XAINode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, api_key, model, prompt, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None, image_2=None):
+    def process(self, api_key, model, system, user, max_tokens=1024, temperature=1.0, top_p=0.7, seed=0, image=None, image_2=None):
         """主处理函数"""
         
         # 检查依赖
@@ -315,15 +316,13 @@ class XAINode:
                 base_url="https://api.x.ai/v1"
             )
 
-            # 使用固定的system message
-            system_prompt = "You are a helpful assistant that accurately describes images and answers questions."
-            
-            messages = [
-                {
+            # 使用独立的system和user输入
+            messages = []
+            if system and system.strip():
+                messages.append({
                     "role": "system",
-                    "content": [{"type": "text", "text": system_prompt}],
-                }
-            ]
+                    "content": [{"type": "text", "text": system.strip()}],
+                })
 
             # 创建用户消息
             user_content = []
@@ -349,8 +348,8 @@ class XAINode:
             # 添加文本提示
             # 根据种子生成请求ID，确保相同种子产生相同结果
             request_id = self._generate_request_id(seed)
-            actual_prompt = f"{prompt}\n\n[Request ID: {request_id}]"
-            user_content.append({"type": "text", "text": actual_prompt})
+            actual_user_prompt = f"{user}\n\n[Request ID: {request_id}]" if user and user.strip() else f"[Request ID: {request_id}]"
+            user_content.append({"type": "text", "text": actual_user_prompt})
 
             if image_2 is not None:
                 try:

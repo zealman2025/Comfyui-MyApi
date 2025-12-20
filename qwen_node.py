@@ -34,8 +34,8 @@ except ImportError:
     HAS_OPENAI = False
 
 # 从配置文件加载模型配置
-def load_qwen_models_from_config():
-    """从config.json加载Qwen模型配置"""
+def load_qwen_vlm_models_from_config():
+    """从config.json加载Qwen VLM模型配置"""
     try:
         config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
 
@@ -45,21 +45,45 @@ def load_qwen_models_from_config():
             qwen_models = models.get('qwen', {})
             return qwen_models
     except Exception as e:
-        print(f"[QwenNode] Error loading Qwen models from config: {str(e)}")
+        print(f"[Qwen3VLM] Error loading Qwen VLM models from config: {str(e)}")
         import traceback
         traceback.print_exc()
         # 提供默认模型作为回退
         default_models = {
-            "qwen-vl-plus": "Qwen VL Plus",
-            "qwen-vl-max": "Qwen VL Max"
+            "qwen3-vl-plus": "qwen3-vl-plus",
+            "qwen3-vl-flash": "qwen3-vl-flash",
+            "qwen3-vl-max": "qwen3-vl-max"
         }
-        print(f"[QwenNode] Using default models: {default_models}")
+        print(f"[Qwen3VLM] Using default models: {default_models}")
+        return default_models
+
+def load_qwen_llm_models_from_config():
+    """从config.json加载Qwen LLM模型配置"""
+    try:
+        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            models = config.get('models', {})
+            qwen_llm_models = models.get('qwen_llm', {})
+            return qwen_llm_models
+    except Exception as e:
+        print(f"[Qwen3LLM] Error loading Qwen LLM models from config: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # 提供默认模型作为回退
+        default_models = {
+            "qwen3-max": "qwen3-max",
+            "qwen3-plus": "qwen3-plus"
+        }
+        print(f"[Qwen3LLM] Using default models: {default_models}")
         return default_models
 
 # 加载模型配置
-QWEN_MODELS = load_qwen_models_from_config()
+QWEN_VLM_MODELS = load_qwen_vlm_models_from_config()
+QWEN_LLM_MODELS = load_qwen_llm_models_from_config()
 
-class QwenNode:
+class Qwen3VLMNode:
     def __init__(self):
         self.current_seed = 0  # 初始化种子值
         self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
@@ -80,7 +104,7 @@ class QwenNode:
         if (input_api_key and
             input_api_key.strip() and
             input_api_key.strip() not in invalid_placeholders):
-            print(f"[QwenNode] 使用输入的API密钥")
+            print(f"[Qwen3VLM] 使用输入的API密钥")
             return input_api_key.strip()
 
         # 否则从config.json读取
@@ -89,13 +113,13 @@ class QwenNode:
                 config = json.load(f)
                 config_api_key = config.get('qwen_api_key', '').strip()
                 if config_api_key:
-                    print(f"[QwenNode] 使用config.json中的API密钥")
+                    print(f"[Qwen3VLM] 使用config.json中的API密钥")
                     return config_api_key
                 else:
-                    print(f"[QwenNode] config.json中未找到qwen_api_key")
+                    print(f"[Qwen3VLM] config.json中未找到qwen_api_key")
                     return ''
         except Exception as e:
-            print(f"[QwenNode] 读取config.json失败: {str(e)}")
+            print(f"[Qwen3VLM] 读取config.json失败: {str(e)}")
             return ''
 
     @classmethod
@@ -103,8 +127,9 @@ class QwenNode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
-                "model": (list(QWEN_MODELS.keys()),),
-                "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
+                "model": (list(QWEN_VLM_MODELS.keys()),),
+                "system": ("STRING", {"multiline": True, "default": "You are a helpful assistant that accurately describes images and answers questions."}),
+                "user": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
                 "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 4096}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
@@ -289,7 +314,7 @@ class QwenNode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, api_key, model, prompt, max_tokens=4096, temperature=1.0, top_p=0.7, seed=0, control_after_generate="fixed", image=None, image_2=None):
+    def process(self, api_key, model, system, user, max_tokens=4096, temperature=1.0, top_p=0.7, seed=0, control_after_generate="fixed", image=None, image_2=None):
         """主处理函数"""
         # 应用种子值
         if seed == 0:  # 0表示使用当前种子
@@ -322,15 +347,13 @@ class QwenNode:
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
             )
 
-            # 使用固定的system message
-            system_prompt = "You are a helpful assistant that accurately describes images and answers questions."
-            
-            messages = [
-                {
+            # 使用独立的system和user输入
+            messages = []
+            if system and system.strip():
+                messages.append({
                     "role": "system",
-                    "content": [{"type": "text", "text": system_prompt}],
-                }
-            ]
+                    "content": [{"type": "text", "text": system.strip()}],
+                })
 
             # 创建用户消息
             user_content = []
@@ -354,8 +377,8 @@ class QwenNode:
 
             # 添加文本提示（位于两张图之间）
             request_id = self._generate_request_id(seed)
-            actual_prompt = f"{prompt}\n\n[Request ID: {request_id}]"
-            user_content.append({"type": "text", "text": actual_prompt})
+            actual_user_prompt = f"{user}\n\n[Request ID: {request_id}]" if user and user.strip() else f"[Request ID: {request_id}]"
+            user_content.append({"type": "text", "text": actual_user_prompt})
 
             # 处理图像输入（图2）
             if image_2 is not None and ("vl" in model or "omni" in model):
@@ -412,10 +435,128 @@ class QwenNode:
             print(traceback.format_exc())
             return (f"Error: {str(e)}",)
 
+class Qwen3LLMNode:
+    def __init__(self):
+        self.current_seed = 0  # 初始化种子值
+        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
+
+    def _get_api_key(self, input_api_key):
+        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
+        # 定义无效的占位符文本
+        invalid_placeholders = [
+            "YOUR_API_KEY",
+            "你的apikey",
+            "your_api_key_here",
+            "请输入API密钥",
+            "请输入你的API密钥",
+            ""
+        ]
+
+        # 如果输入了有效的API密钥，优先使用
+        if (input_api_key and
+            input_api_key.strip() and
+            input_api_key.strip() not in invalid_placeholders):
+            print(f"[Qwen3LLM] 使用输入的API密钥")
+            return input_api_key.strip()
+
+        # 否则从config.json读取
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                config_api_key = config.get('qwen_api_key', '').strip()
+                if config_api_key:
+                    print(f"[Qwen3LLM] 使用config.json中的API密钥")
+                    return config_api_key
+                else:
+                    print(f"[Qwen3LLM] config.json中未找到qwen_api_key")
+                    return ''
+        except Exception as e:
+            print(f"[Qwen3LLM] 读取config.json失败: {str(e)}")
+            return ''
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "api_key": ("STRING", {"default": "", "multiline": False}),
+                "model": (list(QWEN_LLM_MODELS.keys()),),
+                "system": ("STRING", {"multiline": True, "default": "You are a helpful assistant."}),
+                "user": ("STRING", {"multiline": True, "default": "你好，请介绍一下你自己"}),
+                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 8192}),
+                "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
+                "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            }
+        }
+
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "process"
+    CATEGORY = "🍎MYAPI"
+
+    def process(self, api_key, model, system, user, max_tokens=4096, temperature=1.0, top_p=0.7, seed=0):
+        """主处理函数"""
+        # 应用种子值
+        if seed == 0:  # 0表示使用当前种子
+            seed = self.current_seed
+        
+        # 检查依赖
+        if not HAS_OPENAI:
+            return (f"Error: openai 软件包未安装。请使用以下命令安装它 'pip install \"openai>=1.0\"'",)
+        
+        try:
+            print(f"[Qwen3LLM] Processing request with model: {model}")
+            print(f"[Qwen3LLM] Using seed: {seed}")
+            
+            # 获取实际使用的API密钥
+            actual_api_key = self._get_api_key(api_key)
+            if not actual_api_key:
+                return ("Error: 请输入API密钥或在config.json中配置qwen_api_key。请访问 https://dashscope.aliyun.com/ 获取API密钥。",)
+
+            # 使用OpenAI兼容API（DashScope 兼容 OpenAI 协议）
+            client = OpenAI(
+                api_key=actual_api_key,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+            )
+
+            # 构建消息（使用独立的system和user输入）
+            messages = []
+            if system and system.strip():
+                messages.append({"role": "system", "content": system.strip()})
+            if user and user.strip():
+                messages.append({"role": "user", "content": user.strip()})
+
+            print(f"[Qwen3LLM] Calling API with model: {model}")
+            completion = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                stream=True,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p
+            )
+
+            response_text = ""
+            for chunk in completion:
+                if chunk.choices:
+                    if chunk.choices[0].delta.content:
+                        response_text += chunk.choices[0].delta.content
+
+            # 更新种子
+            self.current_seed = seed
+
+            return (response_text,)
+            
+        except Exception as e:
+            print(f"[Qwen3LLM] Unexpected error in process: {str(e)}")
+            print(traceback.format_exc())
+            return (f"Error: {str(e)}",)
+
 NODE_CLASS_MAPPINGS = {
-    "QwenNode": QwenNode
+    "Qwen3VLMNode": Qwen3VLMNode,
+    "Qwen3LLMNode": Qwen3LLMNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "QwenNode": "🍭Qwen AI"
+    "Qwen3VLMNode": "🔎Qwen3 视觉语言模型",
+    "Qwen3LLMNode": "🔎Qwen3 大语言模型"
 } 

@@ -51,15 +51,16 @@ def load_models_from_config():
             doubao_models = models.get('doubao', {})
             return doubao_models
     except Exception as e:
-        print(f"[DoubaoNode] Error loading models from config: {str(e)}")
+        print(f"[DoubaoMMM] Error loading models from config: {str(e)}")
         import traceback
         traceback.print_exc()
         # 提供默认模型作为回退
         default_models = {
-            "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
-            "doubao-seed-1-6-250615": "豆包Seed1.6版"
+            "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
+            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
+            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
         }
-        print(f"[DoubaoNode] Using default models: {default_models}")
+        print(f"[DoubaoMMM] Using default models: {default_models}")
         return default_models
 
 # 加载模型配置
@@ -86,7 +87,7 @@ class DoubaoNode:
         if (input_api_key and
             input_api_key.strip() and
             input_api_key.strip() not in invalid_placeholders):
-            print(f"[DoubaoNode] 使用输入的API密钥")
+            print(f"[DoubaoMMM] 使用输入的API密钥")
             return input_api_key.strip()
 
         # 否则从config.json读取
@@ -95,13 +96,13 @@ class DoubaoNode:
                 config = json.load(f)
                 config_api_key = config.get('doubao_api_key', '').strip()
                 if config_api_key:
-                    print(f"[DoubaoNode] 使用config.json中的API密钥")
+                    print(f"[DoubaoMMM] 使用config.json中的API密钥")
                     return config_api_key
                 else:
-                    print(f"[DoubaoNode] config.json中未找到doubao_api_key")
+                    print(f"[DoubaoMMM] config.json中未找到doubao_api_key")
                     return ''
         except Exception as e:
-            print(f"[DoubaoNode] 读取config.json失败: {str(e)}")
+            print(f"[DoubaoMMM] 读取config.json失败: {str(e)}")
             return ''
 
     @classmethod
@@ -110,12 +111,12 @@ class DoubaoNode:
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "model": (list(DOUBAO_MODELS.keys()),),
-                "prompt": ("STRING", {"multiline": True, "default": "Describe the image content in detail, without making comments or suggestions"}),
-                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 4096}),
+                "prompt": ("STRING", {"multiline": True, "default": "图片主要讲了什么?"}),
+                "max_completion_tokens": ("INT", {"default": 65535, "min": 1, "max": 65535}),
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
                 "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7fffffff}),
-                "thinking_mode": (["自动", "启用", "禁用"], {"default": "禁用"}),
+                "reasoning_effort": (["minimal", "low", "medium", "high"], {"default": "minimal"}),
             },
             "optional": {
                 "image": ("IMAGE",),
@@ -296,16 +297,8 @@ class DoubaoNode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, api_key, model, prompt, max_tokens=4096, temperature=1.0, top_p=0.7, seed=0, thinking_mode="自动", image=None, image_2=None):
+    def process(self, api_key, model, prompt, max_completion_tokens=65535, temperature=1.0, top_p=0.7, seed=0, reasoning_effort="minimal", image=None, image_2=None):
         """主处理函数"""
-        # 中文思考模式映射为英文API值
-        thinking_mode_map = {
-            "自动": "auto",
-            "启用": "enabled", 
-            "禁用": "disabled"
-        }
-        api_thinking_mode = thinking_mode_map.get(thinking_mode, "auto")
-        
         # 应用种子值
         if seed == 0:  # 0表示使用当前种子
             seed = self.current_seed
@@ -316,10 +309,11 @@ class DoubaoNode:
             return (f"Error: 缺少必要的依赖: {', '.join(missing_deps)}. 请安装这些依赖后再试。",)
             
         try:
-            print(f"Processing request with model: {model}")
-            print(f"Image 1 provided: {image is not None}")
-            print(f"Image 2 provided: {image_2 is not None}")
-            print(f"Using seed: {seed}")
+            print(f"[DoubaoMMM] Processing request with model: {model}")
+            print(f"[DoubaoMMM] Image 1 provided: {image is not None}")
+            print(f"[DoubaoMMM] Image 2 provided: {image_2 is not None}")
+            print(f"[DoubaoMMM] Using seed: {seed}")
+            print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
             
             # 获取实际使用的API密钥
             actual_api_key = self._get_api_key(api_key)
@@ -327,7 +321,8 @@ class DoubaoNode:
                 return ("Error: 请输入API密钥或在config.json中配置doubao_api_key。请访问 https://console.volcengine.com/ark 获取API密钥。",)
             
             # 使用豆包API，针对深度思考模型设置更长的超时时间
-            timeout_value = 1800 if model == "doubao-seed-1-6-250615" else 60
+            # 1.8版本支持reasoning_effort，可能需要更长的处理时间
+            timeout_value = 1800 if "1-8" in model or "1-6" in model else 60
 
             # 创建用户消息内容，按照官方示例格式
             user_content = []
@@ -374,7 +369,7 @@ class DoubaoNode:
                 "content": user_content
             }]
 
-            print(f"Calling Doubao API with model: {model}")
+            print(f"[DoubaoMMM] Calling Doubao API with model: {model}")
             
             # 直接使用 HTTP 请求，避免 SDK 兼容性导致的 401
             url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
@@ -382,17 +377,21 @@ class DoubaoNode:
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {actual_api_key}"
             }
+            # 构建请求负载
             payload = {
                 "model": model,
                 "messages": messages,
-                "max_tokens": max_tokens,
-                "temperature": temperature,
-                "top_p": top_p
+                "max_completion_tokens": max_completion_tokens
             }
-            # 为 doubao-seed-1-6-250615 模型添加深度思考控制（按照官方 extra_body.thinking）
-            if model == "doubao-seed-1-6-250615":
-                payload["extra_body"] = {"thinking": {"type": api_thinking_mode}}
-                print(f"深度思考模式: {thinking_mode} (API值: {api_thinking_mode})")
+            
+            # 为 1.8 版本模型添加 reasoning_effort 参数（按照API文档，1.8版本只包含这些参数）
+            if "1-8" in model:
+                payload["reasoning_effort"] = reasoning_effort
+                print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
+            else:
+                # 对于其他版本，添加 temperature 和 top_p 参数
+                payload["temperature"] = temperature
+                payload["top_p"] = top_p
             
             # 禁用代理，因为豆包是国内服务，通常不需要代理
             # 如果系统设置了代理但代理不可用，会导致连接失败
@@ -403,7 +402,7 @@ class DoubaoNode:
                 timeout=timeout_value,
                 proxies={"http": None, "https": None}  # 禁用代理
             )
-            print(f"Response status code: {resp.status_code}")
+            print(f"[DoubaoMMM] Response status code: {resp.status_code}")
             if not resp.ok:
                 try:
                     err_json = resp.json()
@@ -413,6 +412,15 @@ class DoubaoNode:
                 # 针对常见错误给出提示
                 if resp.status_code == 401:
                     return ("Error: 身份验证失败(401)。请确认 config.json 中的 doubao_api_key 正确且未包含多余空格。若仍失败，请直接用该 key 以 cURL 调用验证。",)
+                elif resp.status_code == 404:
+                    error_detail = f"模型 '{model}' 不存在或您没有访问权限。\n"
+                    error_detail += f"请检查：\n"
+                    error_detail += f"1. 模型名称是否正确\n"
+                    error_detail += f"2. 您的账户是否有权限访问该模型\n"
+                    error_detail += f"3. 模型是否已发布或需要特殊申请\n"
+                    error_detail += f"4. 可尝试使用其他可用模型：doubao-seed-1-6-vision-250815 或 doubao-seed-1-6-251015\n"
+                    error_detail += f"\n原始错误: {err_message}"
+                    return (f"Error: {resp.status_code} - {error_detail}",)
                 return (f"Error: {resp.status_code} - {err_message}",)
             
             result = resp.json()
@@ -439,5 +447,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DoubaoNode": "🥟豆包 AI"
+    "DoubaoNode": "🥟豆包MMM"
 }

@@ -155,6 +155,6 @@ NODE_CLASS_MAPPINGS = {
 
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DeepSeekV32ExpNode": "🍭DeepSeek V3.2 Exp",
+    "DeepSeekV32ExpNode": "🔎DeepSeek V3.2 实验版",
 }
 

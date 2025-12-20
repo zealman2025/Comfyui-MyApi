@@ -471,5 +471,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "GeminiImagePreviewNode": "🌐Gemini 2.5 Flash Image Preview (OpenRouter)"
+    "GeminiImagePreviewNode": "🌐Gemini 2.5 Flash 图像预览 (OpenRouter)"
 }

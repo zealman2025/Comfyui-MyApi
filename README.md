@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态AI节点集合
 
-一个功能强大的ComfyUI插件，集成了多个主流AI服务，支持文本生成、图像理解、图像生成等多模态AI功能。
+一个功能强大的ComfyUI插件，集成了多个主流AI服务，支持文本生成、图像理解、图像生成、文本处理、图像处理等多模态AI功能。
 
 <img width="1682" height="1479" alt="image" src="https://github.com/user-attachments/assets/b0828902-4add-48ac-868e-69fb0931770e" />
 <img width="1856" height="1186" alt="image" src="https://github.com/user-attachments/assets/c476ae65-7969-40cc-b58e-3186fcb1e4c0" />
@@ -13,27 +13,36 @@
 - 🛠️ **灵活配置** - 可自定义模型列表和参数设置
 - 🔄 **智能回退** - 配置加载失败时自动使用默认模型
 - 📝 **详细日志** - 完整的调试信息和错误提示
+- 🎨 **图像处理工具** - 局部重绘、文本分割等实用工具
 
 ## 🚀 支持的AI节点
 
 ### 📝 文本生成节点
-- **🍭 Qwen AI** - 阿里通义千问，支持2张图片输入
-- **🥟 豆包 AI** - 字节跳动豆包，支持2张图片输入
-- **🍭 DeepSeek V3.2 Exp** - DeepSeek V3.2实验版，支持深度推理
+- **🔎 Qwen3 视觉语言模型** - 阿里通义千问视觉语言模型，支持2张图片输入
+- **🔎 Qwen3 大语言模型** - 阿里通义千问大语言模型，纯文本对话
+- **🥟 豆包MMM** - 字节跳动豆包多模态模型，支持2张图片输入，支持思考程度调节
+- **🔎 DeepSeek V3.2 实验版** - DeepSeek V3.2实验版，支持深度推理
 - **🚀 XAI Grok** - xAI的Grok模型，支持2张图片输入
-- **🌟 Gemini AI** - Google Gemini，支持2张图片输入
+- **☀️ Gemini AI** - Google Gemini，支持2张图片输入
 
 ### 🌐 翻译节点
-- **🥟 Doubao-Seed-Translation | 豆包翻译模型** - 豆包Seed翻译模型，支持30+种语言互译
+- **🥟 豆包翻译模型** - 豆包Seed翻译模型，支持30+种语言互译
 
 ### 🎨 图像生成节点
-- **🌐 Gemini 2.5 Flash Image Preview** - 通过OpenRouter调用，支持5张图片输入
-- **🍌 BizyAir NanoBanana** - BizyAir图像生成服务，需BizyAir.cn充值金币
-- **🌈 BizyAir Seedream4** - BizyAir高级图像生成，需BizyAir.cn充值金币
-- **🥟 豆包 SEEDREAM 4.0** - 豆包图像生成，支持10张图片输入
+- **🌐 Gemini 2.5 Flash 图像预览 (OpenRouter)** - 通过OpenRouter调用，支持5张图片输入
+- **🌐 BizyAir NanoBanana Pro** - BizyAir图像生成服务，需BizyAir.cn充值金币，支持1-5张图片输入
+- **🌐 BizyAir Seedream 4.5** - BizyAir高级图像生成，需BizyAir.cn充值金币，支持1-5张图片输入
+- **🥟 豆包 SEEDREAM 4.5** - 豆包图像生成，支持自定义尺寸和优化提示
 
 ### ✏️ 图像编辑节点
-- **🍭 Qwen Image Edit Plus** - Qwen图像编辑模型，支持1-3张图片输入，智能图像编辑和合成
+- **🍭 Qwen 图像编辑增强版** - Qwen图像编辑模型，支持1-3张图片输入，智能图像编辑和合成
+
+### 📝 文本处理节点
+- **📝 文本分割** - 按关键词分割文本，支持包含/排除关键词，最多20个输出
+
+### 🎨 图像处理节点
+- **🎨 局部重绘上** - 智能裁切图像，计算最佳裁切范围，输出裁切后的图像和裁切框
+- **🎨 局部重绘下** - 将AI生成的图像适配并贴回原图，支持边缘羽化
 
 ## 🔑 双重API密钥机制
 
@@ -69,20 +78,23 @@
     "models": {
         "qwen": {
             "qwen3-vl-plus": "qwen3-vl-plus",
-            "qwen3-vl-flash": "qwen3-vl-flash"
+            "qwen3-vl-flash": "qwen3-vl-flash",
+            "qwen3-vl-max": "qwen3-vl-max"
+        },
+        "qwen_llm": {
+            "qwen3-max": "qwen3-max",
+            "qwen3-plus": "qwen3-plus"
         },
         "qwen_image_edit": {
             "qwen-image-edit-plus": "Qwen Image Edit Plus"
         },
         "doubao": {
-            "doubao-1-5-thinking-vision-pro-250428": "Doubao-1.5-thinking-vision-pro",
-            "doubao-seed-1-6-250615": "豆包Seed1.6版"
+            "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
+            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
+            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
         },
         "doubao_translation": {
             "doubao-seed-translation-250915": "豆包Seed翻译模型"
-        },
-        "doubao_seedream": {
-            "doubao-seedream-4-0-250828": "豆包SEEDREAM 4.0"
         },
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
@@ -102,7 +114,7 @@
 
 ## 🔧 API密钥获取指南
 
-### 🍭 Qwen (通义千问)
+### 🔎 Qwen (通义千问)
 - **官网**: https://bailian.console.aliyun.com/?tab=api#/api
 - **说明**: 阿里云百炼平台，国内可直接访问
 - **配置**: `qwen_api_key`
@@ -117,7 +129,7 @@
 - **说明**: xAI官方API，需要魔法上网
 - **配置**: `xai_api_key`
 
-### 🌟 Gemini
+### ☀️ Gemini
 - **官网**: https://aistudio.google.com/
 - **说明**: Google AI Studio，需要魔法上网
 - **配置**: `gemini_api_key`
@@ -127,12 +139,12 @@
 - **说明**: 多模型API聚合平台，支持支付宝和微信充值
 - **配置**: `openrouter_api_key`
 
-### 🍌 BizyAir
+### 🌐 BizyAir
 - **官网**: https://bizyair.cn
 - **说明**: BizyAir图像生成平台，需要充值金币，国内可直接访问
 - **配置**: `bizyair_api_key`
 
-### 🍭 DeepSeek
+### 🔎 DeepSeek
 - **官网**: https://platform.deepseek.com/
 - **说明**: DeepSeek AI平台，支持深度推理模型，国内可直接访问
 - **配置**: `deepseek_api_key`
@@ -143,11 +155,12 @@
 
 | 节点 | 图片输入 | 主要特性 | 适用场景 |
 |------|----------|----------|----------|
-| 🍭 Qwen AI | 2张 | 中文优化，响应快速 | 中文对话、文档分析 |
-| 🥟 豆包 AI | 2张 | 思维链推理，深度分析 | 复杂推理、学术研究 |
-| 🍭 DeepSeek V3.2 Exp | 0张 | 深度推理，代码生成 | 代码编写、逻辑推理 |
+| 🔎 Qwen3 视觉语言模型 | 2张 | 中文优化，多模态理解 | 图像理解、文档分析 |
+| 🔎 Qwen3 大语言模型 | 0张 | 纯文本对话，响应快速 | 文本对话、内容生成 |
+| 🥟 豆包MMM | 2张 | 思维链推理，思考程度可调 | 复杂推理、学术研究 |
+| 🔎 DeepSeek V3.2 实验版 | 0张 | 深度推理，代码生成 | 代码编写、逻辑推理 |
 | 🚀 XAI Grok | 2张 | 实时信息，幽默风格 | 新闻分析、创意写作 |
-| 🌟 Gemini AI | 2张 | 多模态理解，精准分析 | 图像理解、代码生成 |
+| ☀️ Gemini AI | 2张 | 多模态理解，精准分析 | 图像理解、代码生成 |
 
 ### 🌐 翻译节点功能
 
@@ -160,15 +173,28 @@
 | 节点 | 输入图片 | 输出 | 主要特性 |
 |------|----------|------|----------|
 | 🌐 Gemini Image Preview | 5张 | 图像+文本 | 图像编辑、风格转换 |
-| 🍌 BizyAir NanoBanana | 1张 | 图像+状态 | 快速生成、需充值金币 |
-| 🌈 BizyAir Seedream4 | 1张 | 图像+状态 | 高质量生成、需充值金币 |
-| 🥟 豆包 SEEDREAM 4.0 | 10张 | 图像+状态 | 多图合成、专业级生成 |
+| 🌐 BizyAir NanoBanana Pro | 1-5张 | 图像+状态 | 快速生成、需充值金币 |
+| 🌐 BizyAir Seedream 4.5 | 1-5张 | 图像+状态 | 高质量生成、需充值金币 |
+| 🥟 豆包 SEEDREAM 4.5 | 自定义 | 图像+状态 | 自定义尺寸、优化提示 |
 
 ### ✏️ 图像编辑节点功能对比
 
 | 节点 | 输入图片 | 输出 | 主要特性 |
 |------|----------|------|----------|
-| 🍭 Qwen Image Edit Plus | 1-3张 | 图像+状态 | 智能编辑、多图合成、姿势迁移 |
+| 🍭 Qwen 图像编辑增强版 | 1-3张 | 图像+状态 | 智能编辑、多图合成、姿势迁移 |
+
+### 📝 文本处理节点功能
+
+| 节点 | 主要特性 | 适用场景 |
+|------|----------|----------|
+| 📝 文本分割 | 按关键词分割，支持包含/排除关键词，最多20个输出 | 文本预处理、批量处理 |
+
+### 🎨 图像处理节点功能
+
+| 节点 | 主要特性 | 适用场景 |
+|------|----------|----------|
+| 🎨 局部重绘上 | 智能裁切，计算最佳裁切范围 | 局部重绘预处理 |
+| 🎨 局部重绘下 | 图像适配并贴回原图，支持边缘羽化 | 局部重绘后处理 |
 
 ## 🛠️ 安装和使用
 
@@ -218,6 +244,12 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 - **Top_p**: 核采样参数 (0.0-1.0)
 - **Max_tokens**: 最大输出长度
 - **Seed**: 种子值，确保输出一致性
+- **Reasoning_effort**: 思考程度（豆包MMM 1.8版本），可选minimal/low/medium/high
+
+### 🎨 局部重绘工作流
+1. 使用**局部重绘上**节点：输入原图和遮罩，输出裁切后的图像和裁切框
+2. 将裁切后的图像发送给AI生成节点
+3. 使用**局部重绘下**节点：输入AI生成的图像、参考图像、原图和裁切框，输出最终结果
 
 ## 🔧 自定义配置
 
@@ -255,6 +287,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 - 遵守各API服务的使用条款
 - 注意API调用频率限制
 - 不同模型有不同的token限制
+- BizyAir节点需要充值金币才能使用
 
 ## 🐛 故障排除
 
@@ -263,6 +296,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 2. **API调用失败**: 验证API密钥和网络连接
 3. **图像处理错误**: 检查图像格式和大小
 4. **依赖缺失**: 手动安装所需Python包
+5. **节点不显示**: 重启ComfyUI，检查控制台错误信息
 
 ### 调试信息
 插件提供详细的日志输出，查看ComfyUI控制台获取调试信息：
