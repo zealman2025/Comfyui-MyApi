@@ -324,7 +324,16 @@ class DoubaoNode:
             # 1.8版本支持reasoning_effort，可能需要更长的处理时间
             timeout_value = 1800 if "1-8" in model or "1-6" in model else 60
 
-            # 创建用户消息内容，按照官方示例格式
+            print(f"[DoubaoMMM] Calling Doubao API with model: {model}")
+            
+            # 使用标准的 /api/v3/chat/completions 端点（支持所有参数）
+            url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {actual_api_key}"
+            }
+            
+            # 构建消息内容（支持OpenAI兼容格式）
             user_content = []
             
             # 处理图像输入（支持两张图像）
@@ -343,7 +352,7 @@ class DoubaoNode:
                     print(f"Error processing image 1: {str(e)}")
                     print(traceback.format_exc())
                     return (f"Error processing image 1: {str(e)}",)
-
+            
             if image_2 is not None:
                 try:
                     print(f"Processing image 2 for API...")
@@ -359,39 +368,39 @@ class DoubaoNode:
                     print(f"Error processing image 2: {str(e)}")
                     print(traceback.format_exc())
                     return (f"Error processing image 2: {str(e)}",)
-
+            
             # 添加文本提示
             user_content.append({"type": "text", "text": prompt})
-
-            # 按照官方示例格式构建消息
+            
+            # 构建消息列表
             messages = [{
                 "role": "user",
                 "content": user_content
             }]
-
-            print(f"[DoubaoMMM] Calling Doubao API with model: {model}")
             
-            # 直接使用 HTTP 请求，避免 SDK 兼容性导致的 401
-            url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {actual_api_key}"
-            }
-            # 构建请求负载
+            # 构建请求payload
             payload = {
                 "model": model,
-                "messages": messages,
-                "max_completion_tokens": max_completion_tokens
+                "messages": messages
             }
             
-            # 为 1.8 版本模型添加 reasoning_effort 参数（按照API文档，1.8版本只包含这些参数）
-            if "1-8" in model:
-                payload["reasoning_effort"] = reasoning_effort
-                print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
+            # 添加max_completion_tokens（支持所有版本）
+            if max_completion_tokens and max_completion_tokens > 0:
+                payload["max_completion_tokens"] = max_completion_tokens
+            
+            # 1.8版本添加reasoning_effort参数
+            is_1_8_model = "1-8" in model or "251228" in model
+            if is_1_8_model:
+                if reasoning_effort:
+                    payload["reasoning_effort"] = reasoning_effort
+                    print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
             else:
                 # 对于其他版本，添加 temperature 和 top_p 参数
                 payload["temperature"] = temperature
                 payload["top_p"] = top_p
+            
+            print(f"[DoubaoMMM] API端点: {url}")
+            print(f"[DoubaoMMM] 请求payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
             
             # 禁用代理，因为豆包是国内服务，通常不需要代理
             # 如果系统设置了代理但代理不可用，会导致连接失败
@@ -424,7 +433,15 @@ class DoubaoNode:
                 return (f"Error: {resp.status_code} - {err_message}",)
             
             result = resp.json()
-            response_text = result["choices"][0]["message"]["content"]
+            print(f"[DoubaoMMM] Response: {json.dumps(result, ensure_ascii=False, indent=2)}")
+            
+            # 解析响应（/api/v3/chat/completions 标准格式）
+            if "choices" in result and len(result["choices"]) > 0:
+                response_text = result["choices"][0]["message"]["content"]
+            else:
+                # 如果无法解析，返回完整响应供调试
+                response_text = json.dumps(result, ensure_ascii=False, indent=2)
+                print(f"[DoubaoMMM] Warning: 无法解析响应格式，返回完整JSON供调试")
 
             # 更新种子
             self.current_seed = seed

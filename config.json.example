@@ -21,8 +21,9 @@
         },
         "doubao": {
             "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
+            "doubao-seed-1-6-flash-250828": "doubao-seed-1-6-flash-250828",
             "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
-            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
+            "doubao-seed-1-8-251215": "doubao-seed-1-8-251228"
         },
         "doubao_translation": {
             "doubao-seed-translation-250915": "豆包Seed翻译模型"
