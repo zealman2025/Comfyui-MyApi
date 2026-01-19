@@ -2,6 +2,12 @@ import os
 import subprocess
 import sys
 
+# 插件版本号
+__version__ = "1.6.0"
+
+# 在启动时打印版本信息
+print(f"[Comfyui-MyApi] 插件版本: {__version__}")
+
 
 def _ensure_requirements_installed():
     """
@@ -97,4 +103,4 @@ NODE_DISPLAY_NAME_MAPPINGS.update(XAI_NODE_DISPLAY_NAME_MAPPINGS)
 # 文本处理系列
 NODE_DISPLAY_NAME_MAPPINGS.update(TEXT_SEGMENTATION_NODE_DISPLAY_NAME_MAPPINGS)
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS'] 
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', '__version__'] 

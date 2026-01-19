@@ -1,5 +1,8 @@
 # 🍎 ComfyUI MyAPI - 多模态AI节点集合
 
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 一个功能强大的ComfyUI插件，集成了多个主流AI服务，支持文本生成、图像理解、图像生成、文本处理、图像处理等多模态AI功能。
 
 <img width="1682" height="1479" alt="image" src="https://github.com/user-attachments/assets/b0828902-4add-48ac-868e-69fb0931770e" />
