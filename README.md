@@ -12,7 +12,7 @@
 
 - 🔑 **双重API密钥机制** - 支持节点输入和配置文件两种密钥管理方式
 - 🖼️ **多模态支持** - 文本生成、图像理解、图像生成一应俱全
-- 🎯 **多服务集成** - 支持Qwen、豆包、DeepSeek、XAI Grok、Gemini、OpenRouter等主流AI服务
+- 🎯 **多服务集成** - 支持Qwen、豆包、DeepSeek、XAI Grok等主流AI服务
 - 🛠️ **灵活配置** - 可自定义模型列表和参数设置
 - 🔄 **智能回退** - 配置加载失败时自动使用默认模型
 - 📝 **详细日志** - 完整的调试信息和错误提示
@@ -21,27 +21,24 @@
 ## 🚀 支持的AI节点
 
 ### 📝 文本生成节点
-- **🔎 Qwen3 视觉语言模型** - 阿里通义千问视觉语言模型，支持2张图片输入
-- **🔎 Qwen3 大语言模型** - 阿里通义千问大语言模型，纯文本对话
+- **🔎 Qwen3.5 多模态模型** - 阿里通义千问 qwen3.5-plus，支持2张图片输入
 - **🥟 豆包MMM** - 字节跳动豆包多模态模型，支持2张图片输入，支持思考程度调节
 - **🔎 DeepSeek V3.2 实验版** - DeepSeek V3.2实验版，支持深度推理
 - **🚀 XAI Grok** - xAI的Grok模型，支持2张图片输入
-- **☀️ Gemini AI** - Google Gemini，支持2张图片输入
 
 ### 🌐 翻译节点
 - **🥟 豆包翻译模型** - 豆包Seed翻译模型，支持30+种语言互译
 
 ### 🎨 图像生成节点
-- **🌐 Gemini 2.5 Flash 图像预览 (OpenRouter)** - 通过OpenRouter调用，支持5张图片输入
-- **🌐 BizyAir NanoBanana Pro** - BizyAir图像生成服务，需BizyAir.cn充值金币，支持1-5张图片输入
-- **🌐 BizyAir Seedream 4.5** - BizyAir高级图像生成，需BizyAir.cn充值金币，支持1-5张图片输入
-- **🥟 豆包 SEEDREAM 4.5** - 豆包图像生成，支持自定义尺寸和优化提示
+- **🌐 BizyAir NanoBanana Pro** - BizyAir图像生成服务，需BizyAir.cn充值金币，支持1-6张图片输入
+- **🌐 BizyAir Seedream 5** - BizyAir高级图像生成，需BizyAir.cn充值金币，支持1-6张图片输入
+- **🥟 豆包 SEEDREAM 5** - 豆包图像生成，支持自定义尺寸和优化提示
 
 ### 🔍 视觉语言模型节点
 - **🌐 BizyAir Gemini3Flash VLM** - BizyAir视觉语言模型，支持图像理解和文本描述生成，需BizyAir.cn充值金币
 
 ### ✏️ 图像编辑节点
-- **🍭 Qwen 图像编辑增强版** - Qwen图像编辑模型，支持1-3张图片输入，智能图像编辑和合成
+- **🍭 Qwen 图像编辑** - Qwen qwen-image-2.0-pro，支持1-3张图片输入，智能图像编辑和合成
 
 ### 📝 文本处理节点
 - **📝 文本分割** - 按关键词分割文本，支持包含/排除关键词，最多20个输出
@@ -74,27 +71,20 @@
     "qwen_api_key": "你的apikey",
     "doubao_api_key": "你的apikey",
     "xai_api_key": "你的apikey",
-    "gemini_api_key": "你的apikey",
-    "openrouter_api_key": "你的apikey",
     "bizyair_api_key": "你的apikey",
     "deepseek_api_key": "你的apikey",
     "models": {
         "qwen": {
-            "qwen3-vl-plus": "qwen3-vl-plus",
-            "qwen3-vl-flash": "qwen3-vl-flash",
-            "qwen3-vl-max": "qwen3-vl-max"
-        },
-        "qwen_llm": {
-            "qwen3-max": "qwen3-max",
-            "qwen3-plus": "qwen3-plus"
+            "qwen3.5-plus": "qwen3.5-plus"
         },
         "qwen_image_edit": {
-            "qwen-image-edit-plus": "Qwen Image Edit Plus"
+            "qwen-image-2.0-pro": "Qwen Image 2.0 Pro"
         },
         "doubao": {
-            "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
-            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
-            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
+            "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro"
+        },
+        "doubao_seedream5": {
+            "doubao-seedream-4-5-251128": "豆包SEEDREAM 5"
         },
         "doubao_translation": {
             "doubao-seed-translation-250915": "豆包Seed翻译模型"
@@ -102,10 +92,6 @@
         "xai": {
             "grok-2-vision-1212": "Grok 2 Vision 1212",
             "grok-4": "grok-4"
-        },
-        "gemini": {
-            "gemini-2.5-pro": "Gemini 2.5 pro",
-            "gemini-2.5-flash": "Gemini 2.5 flash"
         },
         "deepseek": {
             "deepseek-chat": "DeepSeek Chat",
@@ -132,16 +118,6 @@
 - **说明**: xAI官方API，需要魔法上网
 - **配置**: `xai_api_key`
 
-### ☀️ Gemini
-- **官网**: https://aistudio.google.com/
-- **说明**: Google AI Studio，需要魔法上网
-- **配置**: `gemini_api_key`
-
-### 🌐 OpenRouter
-- **官网**: https://openrouter.ai/
-- **说明**: 多模型API聚合平台，支持支付宝和微信充值
-- **配置**: `openrouter_api_key`
-
 ### 🌐 BizyAir
 - **官网**: https://bizyair.cn
 - **说明**: BizyAir图像生成平台，需要充值金币，国内可直接访问
@@ -158,13 +134,10 @@
 
 | 节点 | 图片输入 | 主要特性 | 适用场景 |
 |------|----------|----------|----------|
-| 🔎 Qwen3 视觉语言模型 | 2张 | 中文优化，多模态理解 | 图像理解、文档分析 |
-| 🔎 Qwen3 大语言模型 | 0张 | 纯文本对话，响应快速 | 文本对话、内容生成 |
+| 🔎 Qwen3.5 多模态模型 | 2张 | 多模态理解 | 图像理解、文档分析 |
 | 🥟 豆包MMM | 2张 | 思维链推理，思考程度可调 | 复杂推理、学术研究 |
 | 🔎 DeepSeek V3.2 实验版 | 0张 | 深度推理，代码生成 | 代码编写、逻辑推理 |
 | 🚀 XAI Grok | 2张 | 实时信息，幽默风格 | 新闻分析、创意写作 |
-| ☀️ Gemini AI | 2张 | 多模态理解，精准分析 | 图像理解、代码生成 |
-
 ### 🌐 翻译节点功能
 
 | 节点 | 支持语言 | 主要特性 | 适用场景 |
@@ -175,16 +148,15 @@
 
 | 节点 | 输入图片 | 输出 | 主要特性 |
 |------|----------|------|----------|
-| 🌐 Gemini Image Preview | 5张 | 图像+文本 | 图像编辑、风格转换 |
-| 🌐 BizyAir NanoBanana Pro | 1-5张 | 图像+状态 | 快速生成、需充值金币 |
-| 🌐 BizyAir Seedream 4.5 | 1-5张 | 图像+状态 | 高质量生成、需充值金币 |
-| 🥟 豆包 SEEDREAM 4.5 | 自定义 | 图像+状态 | 自定义尺寸、优化提示 |
+| 🌐 BizyAir NanoBanana Pro | 1-6张 | 图像+状态 | 快速生成、需充值金币 |
+| 🌐 BizyAir Seedream 5 | 1-6张 | 图像+状态 | 高质量生成、需充值金币 |
+| 🥟 豆包 SEEDREAM 5 | 自定义 | 图像+状态 | 自定义尺寸、优化提示 |
 
 ### ✏️ 图像编辑节点功能对比
 
 | 节点 | 输入图片 | 输出 | 主要特性 |
 |------|----------|------|----------|
-| 🍭 Qwen 图像编辑增强版 | 1-3张 | 图像+状态 | 智能编辑、多图合成、姿势迁移 |
+| 🍭 Qwen 图像编辑 | 1-3张 | 图像+状态 | qwen-image-2.0-pro，智能编辑、多图合成 |
 
 ### 🔍 视觉语言模型节点功能
 
@@ -269,7 +241,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 ```json
 "models": {
     "qwen": {
-        "qwen3-vl-plus": "自定义显示名称"
+        "qwen3.5-plus": "自定义显示名称"
     }
 }
 ```
@@ -284,7 +256,7 @@ G:\ComfyUI安装目录\python\python.exe -m pip install openai google-genai requ
 
 ### 网络要求
 - **国内服务** (Qwen、豆包、DeepSeek): 直接访问
-- **国外服务** (Gemini、XAI、OpenRouter): 需要稳定的网络连接
+- **国外服务** (XAI): 需要稳定的网络连接
 
 ### 使用限制
 - 遵守各API服务的使用条款

@@ -156,7 +156,7 @@
       },
       "widgets_values": [
         "",
-        "doubao-seed-1-6-vision-250815",
+        "Doubao-seed-2.0-Pro",
         "Describe the image content in detail, without making comments or suggestions",
         4096,
         1,
@@ -170,7 +170,7 @@
     },
     {
       "id": 4,
-      "type": "DoubaoSeedreamNode",
+      "type": "DoubaoSeedream5Node",
       "pos": [
         -6356.879395358714,
         1303.7325269672256
@@ -271,7 +271,7 @@
       "properties": {
         "aux_id": "zealman2025/Comfyui-MyApi",
         "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
-        "Node name for S&R": "DoubaoSeedreamNode",
+        "Node name for S&R": "DoubaoSeedream5Node",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -284,7 +284,7 @@
         "Custom",
         1920,
         1080,
-        "doubao-seedream-4-0-250828",
+        "doubao-seedream-4-5-251128",
         0,
         "randomize",
         false,
@@ -399,7 +399,7 @@
       },
       "widgets_values": [
         "",
-        "qwen-image-edit-plus",
+        "qwen-image-2.0-pro",
         "图1中的女生穿着图2中的黑色裙子按图3的姿势坐下",
         " ",
         false,
@@ -411,7 +411,7 @@
     },
     {
       "id": 7,
-      "type": "BizyAirSeedream4Node",
+      "type": "BizyAirSeedream5Node",
       "pos": [
         -5908.6392189871085,
         1009.8032848457259
@@ -449,7 +449,7 @@
       "properties": {
         "aux_id": "zealman2025/Comfyui-MyApi",
         "ver": "37dccc9cc0d3a9731af71eca5bd1f7aee3889c49",
-        "Node name for S&R": "BizyAirSeedream4Node",
+        "Node name for S&R": "BizyAirSeedream5Node",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -492,7 +492,7 @@
         }
       },
       "widgets_values": [
-        "🍭 Qwen (通义千问)\n官网: https://bailian.console.aliyun.com/?tab=api#/api\n说明: 阿里云百炼平台，国内可直接访问\n配置: qwen_api_key\n🥟 豆包 (Doubao)\n官网: https://www.volcengine.com/experience/ark\n说明: 字节跳动火山引擎，国内可直接访问\n配置: doubao_api_key\n🚀 XAI Grok\n官网: https://x.ai/api\n说明: xAI官方API，需要魔法上网\n配置: xai_api_key\n🌟 Gemini\n官网: https://aistudio.google.com/\n说明: Google AI Studio，需要魔法上网\n配置: gemini_api_key\n🌐 OpenRouter\n官网: https://openrouter.ai/\n说明: 多模型API聚合平台，支持支付宝和微信充值\n配置: openrouter_api_key\n🍌 BizyAir\n官网: https://bizyair.cn\n说明: BizyAir图像生成平台，需要充值金币，国内可直接访问\n配置: bizyair_api_key\n🍭 DeepSeek\n官网: https://platform.deepseek.com/\n说明: DeepSeek AI平台，支持深度推理模型，国内可直接访问\n配置: deepseek_api_key"
+        "🍭 Qwen (通义千问)\n官网: https://bailian.console.aliyun.com/?tab=api#/api\n说明: 阿里云百炼平台，国内可直接访问\n配置: qwen_api_key\n🥟 豆包 (Doubao)\n官网: https://www.volcengine.com/experience/ark\n说明: 字节跳动火山引擎，国内可直接访问\n配置: doubao_api_key\n🚀 XAI Grok\n官网: https://x.ai/api\n说明: xAI官方API，需要魔法上网\n配置: xai_api_key\n🍌 BizyAir\n官网: https://bizyair.cn\n说明: BizyAir图像生成平台，需要充值金币，国内可直接访问\n配置: bizyair_api_key\n🍭 DeepSeek\n官网: https://platform.deepseek.com/\n说明: DeepSeek AI平台，支持深度推理模型，国内可直接访问\n配置: deepseek_api_key"
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -547,7 +547,7 @@
       },
       "widgets_values": [
         "",
-        "qwen3-vl-plus",
+        "qwen3.5-plus",
         "Describe the image content in detail, without making comments or suggestions",
         4096,
         1,

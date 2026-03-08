@@ -1,8 +1,12 @@
 import os
 import json
 import io
-import base64
 import traceback
+
+try:
+    from .bizyair_upload import upload_image_to_bizyair
+except ImportError:
+    from bizyair_upload import upload_image_to_bizyair
 
 try:
     import requests
@@ -107,37 +111,31 @@ class BizyAirGemini3FlashVLMNode:
             
         return missing_deps
 
-    def _image_to_base64(self, image):
-        """将图像转换为base64编码"""
+    def _image_to_bytes(self, image):
+        """将图像转换为字节流（用于 OSS 上传），返回 (bytes, file_ext)"""
         try:
             if not HAS_PIL or not HAS_NUMPY:
-                return None
+                return None, None
             
-            # 确保图像是numpy数组
             if HAS_TORCH and hasattr(image, 'cpu'):
-                # 如果是torch张量，转换为numpy
                 image_np = image.cpu().numpy()
             else:
                 image_np = image
             
-            # 确保数据类型和范围正确
             if image_np.dtype != np.uint8:
                 if image_np.max() <= 1.0:
                     image_np = (image_np * 255).astype(np.uint8)
                 else:
                     image_np = image_np.astype(np.uint8)
             
-            # 处理批次维度
             if len(image_np.shape) == 4:
-                image_np = image_np[0]  # 取第一张图像
+                image_np = image_np[0]
             
-            # 确保是RGB格式
             if len(image_np.shape) == 3 and image_np.shape[2] == 3:
                 pil_image = Image.fromarray(image_np, 'RGB')
             else:
                 raise ValueError(f"Unsupported image shape: {image_np.shape}")
             
-            # 控制图像体积，避免Base64超过服务端限制
             max_bytes = 10 * 1024 * 1024
             target_raw_bytes = int(max_bytes * 0.7)
             min_dim = 512
@@ -151,8 +149,7 @@ class BizyAirGemini3FlashVLMNode:
             image_format = 'PNG'
 
             if raw_size > target_raw_bytes:
-                print(f"Warning: Image raw size ({raw_size / 1024 / 1024:.2f}MB) exceeds target {target_raw_bytes / 1024 / 1024:.2f}MB. Compressing...")
-
+                print(f"Warning: Image raw size ({raw_size / 1024 / 1024:.2f}MB) exceeds target. Compressing...")
             resize_attempts = 0
             while raw_size > target_raw_bytes and (pil_image.width > min_dim or pil_image.height > min_dim) and resize_attempts < 5:
                 scale_factor = max((target_raw_bytes / raw_size) ** 0.5, 0.3)
@@ -163,35 +160,28 @@ class BizyAirGemini3FlashVLMNode:
                     new_height = max(int(pil_image.height * 0.75), min_dim)
                 pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
                 resize_attempts += 1
-                print(f"Resized image attempt {resize_attempts}: {new_width}x{new_height}")
                 buffer, raw_size = save_to_buffer(pil_image, 'PNG', optimize=True)
 
             if raw_size > target_raw_bytes:
-                print("PNG still too large, switching to JPEG compression...")
                 quality = 90
-                jpeg_attempts = 0
                 while raw_size > target_raw_bytes and quality >= 40:
                     buffer, raw_size = save_to_buffer(pil_image, 'JPEG', quality=quality, optimize=True)
                     image_format = 'JPEG'
-                    jpeg_attempts += 1
-                    print(f"JPEG compression attempt {jpeg_attempts}: quality={quality}, size={raw_size / 1024 / 1024:.2f}MB")
                     quality -= 5
 
             if raw_size > target_raw_bytes:
                 raise ValueError(f"Image is too large even after compression ({raw_size / 1024 / 1024:.2f}MB). Please use a smaller image or resize manually.")
 
             buffer.seek(0)
-            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-            base64_size_mb = len(image_base64) / 1024 / 1024
-            print(f"Final raw size: {raw_size / 1024 / 1024:.2f}MB, base64 size: {base64_size_mb:.2f}MB, format: {image_format}")
-
-            mime_type = 'image/jpeg' if image_format == 'JPEG' else 'image/png'
-            return f"data:{mime_type};base64,{image_base64}"
+            img_bytes = buffer.getvalue()
+            ext = 'jpg' if image_format == 'JPEG' else 'png'
+            print(f"Image prepared for OSS: {raw_size / 1024 / 1024:.2f}MB, format: {image_format}")
+            return img_bytes, ext
             
         except Exception as e:
-            print(f"Error converting image to base64: {str(e)}")
+            print(f"Error converting image to bytes: {str(e)}")
             print(traceback.format_exc())
-            return None
+            return None, None
 
     def _download_text_from_url(self, url):
         """从URL下载文本文件并返回内容"""
@@ -270,14 +260,16 @@ class BizyAirGemini3FlashVLMNode:
                 "Authorization": f"Bearer {actual_api_key}"
             }
             
-            # 将图像转换为base64
-            image_base64 = self._image_to_base64(image)
-            if not image_base64:
+            # 将图像上传到 OSS 获取 URL（与主插件一致）
+            img_bytes, ext = self._image_to_bytes(image)
+            if not img_bytes or not ext:
                 raise Exception("图像转换失败，请检查图像格式")
+            add_log = lambda t, m: print(f"[BizyAirGemini3FlashVLM][{t}] {m}")
+            image_url = upload_image_to_bizyair(img_bytes, actual_api_key, add_log_fn=add_log, file_name=f"vlm_image.{ext}")
             
-            # 构建input_values
+            # 构建input_values（使用 OSS URL 替代 base64）
             input_values = {
-                "19:LoadImage.image": image_base64,
+                "19:LoadImage.image": image_url,
                 "18:BizyAir_TRD_VLM_API.system_prompt": system_prompt,
                 "18:BizyAir_TRD_VLM_API.user_prompt": user_prompt
             }
@@ -293,12 +285,12 @@ class BizyAirGemini3FlashVLMNode:
             print(f"System Prompt: {system_prompt[:100]}...")
             print(f"User Prompt: {user_prompt[:100]}...")
             
-            # 打印请求数据（隐藏base64图片数据）
+            # 打印请求数据（隐藏 OSS URL 详情）
             debug_data = data.copy()
             debug_input_values = {}
             for key, value in input_values.items():
-                if isinstance(value, str) and value.startswith('data:image'):
-                    debug_input_values[key] = f"[Base64 Image Data: {len(value)} chars]"
+                if isinstance(value, str) and ('storage.bizyair.cn' in value or 'aliyuncs.com' in value):
+                    debug_input_values[key] = f"[OSS URL: {value[:60]}...]"
                 else:
                     debug_input_values[key] = value
             debug_data['input_values'] = debug_input_values

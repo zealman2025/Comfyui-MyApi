@@ -49,15 +49,15 @@ def load_qwen_image_edit_models_from_config():
             image_edit_models = models.get('qwen_image_edit', {})
             if image_edit_models:
                 return image_edit_models
-            # 如果没有配置，返回默认模型
+            # 如果没有配置，返回默认模型（qwen-image-2.0-pro）
             return {
-                "qwen-image-edit-plus": "Qwen Image Edit Plus"
+                "qwen-image-2.0-pro": "Qwen Image 2.0 Pro"
             }
     except Exception as e:
         print(f"[QwenImageEditPlusNode] 加载配置失败: {str(e)}")
         traceback.print_exc()
         return {
-            "qwen-image-edit-plus": "Qwen Image Edit Plus"
+            "qwen-image-2.0-pro": "Qwen Image 2.0 Pro"
         }
 
 
@@ -106,7 +106,7 @@ class QwenImageEditPlusNode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
-                "model": (list(QWEN_IMAGE_EDIT_MODELS.keys()), {"default": list(QWEN_IMAGE_EDIT_MODELS.keys())[0] if QWEN_IMAGE_EDIT_MODELS else "qwen-image-edit-plus"}),
+                "model": (list(QWEN_IMAGE_EDIT_MODELS.keys()), {"default": list(QWEN_IMAGE_EDIT_MODELS.keys())[0] if QWEN_IMAGE_EDIT_MODELS else "qwen-image-2.0-pro"}),
                 "prompt": ("STRING", {"multiline": True, "default": "图1中的女生穿着图2中的黑色裙子按图3的姿势坐下"}),
                 "negative_prompt": ("STRING", {"multiline": True, "default": " "}),
                 "watermark": ("BOOLEAN", {"default": False}),

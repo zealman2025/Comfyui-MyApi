@@ -56,9 +56,7 @@ def load_models_from_config():
         traceback.print_exc()
         # 提供默认模型作为回退
         default_models = {
-            "doubao-seed-1-6-vision-250815": "doubao-seed-1-6-vision-250815",
-            "doubao-seed-1-6-251015": "doubao-seed-1-6-251015",
-            "doubao-seed-1-8-251215": "doubao-seed-1-8-251215"
+            "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro"
         }
         print(f"[DoubaoMMM] Using default models: {default_models}")
         return default_models
@@ -427,7 +425,7 @@ class DoubaoNode:
                     error_detail += f"1. 模型名称是否正确\n"
                     error_detail += f"2. 您的账户是否有权限访问该模型\n"
                     error_detail += f"3. 模型是否已发布或需要特殊申请\n"
-                    error_detail += f"4. 可尝试使用其他可用模型：doubao-seed-1-6-vision-250815 或 doubao-seed-1-6-251015\n"
+                    error_detail += f"4. 可尝试使用其他可用模型：Doubao-seed-2.0-Pro\n"
                     error_detail += f"\n原始错误: {err_message}"
                     return (f"Error: {resp.status_code} - {error_detail}",)
                 return (f"Error: {resp.status_code} - {err_message}",)
