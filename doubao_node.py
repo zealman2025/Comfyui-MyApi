@@ -39,69 +39,33 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
-# 从配置文件加载模型配置
-def load_models_from_config():
-    """从config.json加载模型配置"""
-    try:
-        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            models = config.get('models', {})
-            doubao_models = models.get('doubao', {})
-            return doubao_models
-    except Exception as e:
-        print(f"[DoubaoMMM] Error loading models from config: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        # 提供默认模型作为回退
-        default_models = {
-            "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro"
-        }
-        print(f"[DoubaoMMM] Using default models: {default_models}")
-        return default_models
-
-# 加载模型配置
-DOUBAO_MODELS = load_models_from_config()
+DOUBAO_MODELS = {
+    "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro",
+}
 
 class DoubaoNode:
     def __init__(self):
         self.current_seed = 0  # 初始化种子值
-        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
 
     def _get_api_key(self, input_api_key):
-        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
-        # 定义无效的占位符文本
+        """仅从节点输入读取 API 密钥。"""
         invalid_placeholders = [
             "YOUR_API_KEY",
             "你的apikey",
             "your_api_key_here",
             "请输入API密钥",
             "请输入你的API密钥",
-            ""
+            "",
         ]
 
-        # 如果输入了有效的API密钥，优先使用
-        if (input_api_key and
-            input_api_key.strip() and
-            input_api_key.strip() not in invalid_placeholders):
-            print(f"[DoubaoMMM] 使用输入的API密钥")
+        if (
+            input_api_key
+            and input_api_key.strip()
+            and input_api_key.strip() not in invalid_placeholders
+        ):
+            print("[DoubaoMMM] 使用节点中的 API 密钥")
             return input_api_key.strip()
-
-        # 否则从config.json读取
-        try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                config_api_key = config.get('doubao_api_key', '').strip()
-                if config_api_key:
-                    print(f"[DoubaoMMM] 使用config.json中的API密钥")
-                    return config_api_key
-                else:
-                    print(f"[DoubaoMMM] config.json中未找到doubao_api_key")
-                    return ''
-        except Exception as e:
-            print(f"[DoubaoMMM] 读取config.json失败: {str(e)}")
-            return ''
+        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -316,7 +280,7 @@ class DoubaoNode:
             # 获取实际使用的API密钥
             actual_api_key = self._get_api_key(api_key)
             if not actual_api_key:
-                return ("Error: 请输入API密钥或在config.json中配置doubao_api_key。请访问 https://console.volcengine.com/ark 获取API密钥。",)
+                return ("Error: 请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。",)
             
             # 使用豆包API，针对深度思考模型设置更长的超时时间
             # 1.8版本支持reasoning_effort，可能需要更长的处理时间
@@ -418,7 +382,7 @@ class DoubaoNode:
                     err_message = resp.text
                 # 针对常见错误给出提示
                 if resp.status_code == 401:
-                    return ("Error: 身份验证失败(401)。请确认 config.json 中的 doubao_api_key 正确且未包含多余空格。若仍失败，请直接用该 key 以 cURL 调用验证。",)
+                    return ("Error: 身份验证失败(401)。请确认节点中填写的 API 密钥正确且未含多余空格。若仍失败，请用该 key 以 cURL 调用验证。",)
                 elif resp.status_code == 404:
                     error_detail = f"模型 '{model}' 不存在或您没有访问权限。\n"
                     error_detail += f"请检查：\n"

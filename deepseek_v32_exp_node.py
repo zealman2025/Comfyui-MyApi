@@ -1,5 +1,3 @@
-import os
-import json
 import traceback
 
 try:
@@ -9,28 +7,10 @@ except ImportError:
     HAS_OPENAI = False
 
 
-def load_deepseek_models_from_config():
-    """从config.json加载DeepSeek模型配置"""
-    try:
-        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = json.load(f)
-        models = config.get("models", {})
-        deepseek_models = models.get("deepseek", {})
-        return deepseek_models if deepseek_models else {
-            "deepseek-chat": "DeepSeek Chat",
-            "deepseek-reasoner": "DeepSeek Reasoner",
-        }
-    except Exception as e:
-        print(f"[DeepSeekV32ExpNode] 加载配置失败: {str(e)}")
-        traceback.print_exc()
-        return {
-            "deepseek-chat": "DeepSeek Chat",
-            "deepseek-reasoner": "DeepSeek Reasoner",
-        }
-
-
-DEEPSEEK_MODELS = load_deepseek_models_from_config()
+DEEPSEEK_MODELS = {
+    "deepseek-chat": "DeepSeek Chat",
+    "deepseek-reasoner": "DeepSeek Reasoner",
+}
 
 
 class DeepSeekV32ExpNode:
@@ -39,9 +19,6 @@ class DeepSeekV32ExpNode:
     CATEGORY = "🍎MYAPI"
     RETURN_TYPES = ("STRING",)
     FUNCTION = "process"
-
-    def __init__(self):
-        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -71,22 +48,9 @@ class DeepSeekV32ExpNode:
         }
 
         if input_api_key and input_api_key.strip() and input_api_key.strip() not in invalid_placeholders:
-            print("[DeepSeekV32ExpNode] 使用输入的API密钥")
+            print("[DeepSeekV32ExpNode] 使用节点中的 API 密钥")
             return input_api_key.strip()
-
-        try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
-                config = json.load(f)
-            config_key = config.get("deepseek_api_key", "").strip()
-            if config_key:
-                print("[DeepSeekV32ExpNode] 使用config.json中的API密钥")
-            else:
-                print("[DeepSeekV32ExpNode] config.json中未找到deepseek_api_key")
-            return config_key
-        except Exception as e:
-            print(f"[DeepSeekV32ExpNode] 读取config.json失败: {str(e)}")
-            traceback.print_exc()
-            return ""
+        return ""
 
     def _check_dependencies(self):
         missing = []
@@ -102,7 +66,7 @@ class DeepSeekV32ExpNode:
 
         actual_key = self._get_api_key(api_key)
         if not actual_key:
-            return ("Error: 未找到有效的API密钥，请手动输入或在config.json中配置deepseek_api_key。",)
+            return ("Error: 请在节点中填写有效的 DeepSeek API 密钥。",)
 
         try:
             client = OpenAI(api_key=actual_key, base_url="https://api.deepseek.com")

@@ -1,4 +1,3 @@
-import os
 import json
 import traceback
 
@@ -10,68 +9,33 @@ except ImportError:
     print("Warning: requests library not found. Please install it with: pip install requests")
 
 
-def load_doubao_translation_models_from_config():
-    """从config.json加载豆包翻译模型配置"""
-    try:
-        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            models = config.get('models', {})
-            # 从独立的 doubao_translation 类型加载
-            translation_models = models.get('doubao_translation', {})
-            if translation_models:
-                return translation_models
-            # 如果没有配置，返回默认翻译模型
-            return {
-                "doubao-seed-translation-250915": "豆包Seed翻译模型"
-            }
-    except Exception as e:
-        print(f"[DoubaoSeedTranslationNode] 加载配置失败: {str(e)}")
-        traceback.print_exc()
-        return {
-            "doubao-seed-translation-250915": "豆包Seed翻译模型"
-        }
-
-
-DOUBAO_TRANSLATION_MODELS = load_doubao_translation_models_from_config()
+DOUBAO_TRANSLATION_MODELS = {
+    "doubao-seed-translation-250915": "豆包Seed翻译模型",
+}
 
 
 class DoubaoSeedTranslationNode:
     """豆包 Seed 翻译模型节点"""
     
-    def __init__(self):
-        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-
     def _get_api_key(self, input_api_key):
-        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
+        """仅从节点输入读取 API 密钥。"""
         invalid_placeholders = [
             "YOUR_API_KEY",
             "你的apikey",
             "your_api_key_here",
             "请输入API密钥",
             "请输入你的API密钥",
-            ""
+            "",
         ]
 
-        if (input_api_key and
-            input_api_key.strip() and
-            input_api_key.strip() not in invalid_placeholders):
-            print(f"[DoubaoSeedTranslationNode] 使用输入的API密钥")
+        if (
+            input_api_key
+            and input_api_key.strip()
+            and input_api_key.strip() not in invalid_placeholders
+        ):
+            print("[DoubaoSeedTranslationNode] 使用节点中的 API 密钥")
             return input_api_key.strip()
-
-        try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                config_api_key = config.get('doubao_api_key', '').strip()
-                if config_api_key:
-                    print(f"[DoubaoSeedTranslationNode] 使用config.json中的API密钥")
-                    return config_api_key
-                else:
-                    print(f"[DoubaoSeedTranslationNode] config.json中未找到doubao_api_key")
-                    return ''
-        except Exception as e:
-            print(f"[DoubaoSeedTranslationNode] 读取config.json失败: {str(e)}")
-            return ''
+        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -147,7 +111,7 @@ class DoubaoSeedTranslationNode:
 
         actual_api_key = self._get_api_key(api_key)
         if not actual_api_key:
-            return ("Error: 请输入API密钥或在config.json中配置doubao_api_key。请访问 https://console.volcengine.com/ark 获取API密钥。",)
+            return ("Error: 请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。",)
 
         if not text or not text.strip():
             return ("Error: 请输入要翻译的文本。",)
@@ -207,7 +171,7 @@ class DoubaoSeedTranslationNode:
                     err_message = response.text
                 
                 if response.status_code == 401:
-                    return ("Error: 身份验证失败(401)。请确认 config.json 中的 doubao_api_key 正确且未包含多余空格。",)
+                    return ("Error: 身份验证失败(401)。请确认节点中填写的 API 密钥正确且未含多余空格。",)
                 return (f"Error: {response.status_code} - {err_message}",)
 
             result = response.json()

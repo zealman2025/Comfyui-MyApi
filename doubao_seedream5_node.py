@@ -31,69 +31,35 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
-# 从配置文件加载模型配置
-def load_doubao_seedream5_models_from_config():
-    """从config.json加载豆包SEEDREAM 5模型配置"""
-    try:
-        config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            models = config.get('models', {})
-            seedream5_models = models.get('doubao_seedream5', {}) or models.get('doubao_seedream45', {})
-            if seedream5_models:
-                return seedream5_models
-            return {
-                "doubao-seedream-4-5-251128": "豆包SEEDREAM 5"
-            }
-    except Exception as e:
-        print(f"[DoubaoSeedream5Node] 加载配置失败: {str(e)}")
-        traceback.print_exc()
-        return {
-            "doubao-seedream-4-5-251128": "豆包SEEDREAM 5"
-        }
-
-DOUBAO_SEEDREAM5_MODELS = load_doubao_seedream5_models_from_config()
+DOUBAO_SEEDREAM5_MODELS = {
+    "doubao-seedream-4-5-251128": "豆包SEEDREAM 5",
+}
 
 class DoubaoSeedream5Node:
     """豆包 SEEDREAM 5 图像生成节点"""
     
     def __init__(self):
         self.current_seed = 21
-        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
 
     def _get_api_key(self, input_api_key):
-        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
-        # 定义无效的占位符文本
+        """仅从节点输入读取 API 密钥。"""
         invalid_placeholders = [
             "YOUR_API_KEY",
             "你的apikey",
             "your_api_key_here",
             "请输入API密钥",
             "请输入你的API密钥",
-            ""
+            "",
         ]
 
-        # 如果输入了有效的API密钥，优先使用
-        if (input_api_key and
-            input_api_key.strip() and
-            input_api_key.strip() not in invalid_placeholders):
-            print(f"[DoubaoSeedream5] 使用输入的API密钥")
+        if (
+            input_api_key
+            and input_api_key.strip()
+            and input_api_key.strip() not in invalid_placeholders
+        ):
+            print("[DoubaoSeedream5] 使用节点中的 API 密钥")
             return input_api_key.strip()
-
-        # 否则从config.json读取
-        try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                config_api_key = config.get('doubao_api_key', '').strip()
-                if config_api_key:
-                    print(f"[DoubaoSeedream5] 使用config.json中的API密钥")
-                    return config_api_key
-                else:
-                    print(f"[DoubaoSeedream5] config.json中未找到doubao_api_key")
-                    return ''
-        except Exception as e:
-            print(f"[DoubaoSeedream5] 读取config.json失败: {str(e)}")
-            return ''
+        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -561,7 +527,7 @@ class DoubaoSeedream5Node:
             # 获取实际使用的API密钥
             actual_api_key = self._get_api_key(api_key)
             if not actual_api_key:
-                raise Exception("请输入API密钥或在config.json中配置doubao_api_key。请访问 https://console.volcengine.com/ark 获取API密钥。")
+                raise Exception("请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。")
 
             # 构建API请求
             url = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
@@ -633,7 +599,7 @@ class DoubaoSeedream5Node:
                 elif response.status_code == 400:
                     user_friendly_message = f"请求参数有误: {error_message}"
                 elif response.status_code == 401:
-                    user_friendly_message = "API密钥无效，请检查config.json中的doubao_api_key配置。"
+                    user_friendly_message = "API 密钥无效，请在节点中检查豆包 API 密钥。"
                 elif response.status_code == 429:
                     user_friendly_message = "请求过于频繁，请稍后再试。"
                 elif response.status_code == 500:

@@ -1,4 +1,3 @@
-import os
 import json
 import io
 import traceback
@@ -42,41 +41,24 @@ class BizyAirNanoBananaProNode:
     专门用于调用BizyAir的NanoBananaPro模型API
     """
 
-    def __init__(self):
-        self.config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.json")
-
     def _get_api_key(self, input_api_key):
-        """获取API密钥，优先使用输入的密钥，否则从config.json读取"""
-        # 定义无效的占位符文本
+        """仅从节点输入读取 API 密钥。"""
         invalid_placeholders = [
             "YOUR_API_KEY",
             "你的apikey",
             "your_api_key_here",
             "请输入API密钥",
-            "请输入你的API密钥"
+            "请输入你的API密钥",
         ]
 
-        # 如果输入了有效的API密钥，优先使用
-        if (input_api_key and
-            input_api_key.strip() and
-            input_api_key.strip() not in invalid_placeholders):
-            print(f"[BizyAirNanoBananaPro] 使用输入的API密钥")
+        if (
+            input_api_key
+            and input_api_key.strip()
+            and input_api_key.strip() not in invalid_placeholders
+        ):
+            print("[BizyAirNanoBananaPro] 使用节点中的 API 密钥")
             return input_api_key.strip()
-
-        # 否则从config.json读取
-        try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-                config_api_key = config.get('bizyair_api_key', '').strip()
-                if config_api_key:
-                    print(f"[BizyAirNanoBananaPro] 使用config.json中的API密钥")
-                    return config_api_key
-                else:
-                    print(f"[BizyAirNanoBananaPro] config.json中未找到bizyair_api_key")
-                    return ''
-        except Exception as e:
-            print(f"[BizyAirNanoBananaPro] 读取config.json失败: {str(e)}")
-            return ''
+        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -238,7 +220,7 @@ class BizyAirNanoBananaProNode:
         # 获取实际使用的API密钥
         actual_api_key = self._get_api_key(api_key)
         if not actual_api_key:
-            raise Exception("请输入API密钥或在config.json中配置bizyair_api_key。请访问 https://bizyair.cn 获取API密钥。")
+            raise Exception("请在节点中填写 BizyAir API 密钥。请访问 https://bizyair.cn 获取。")
 
         # 检查依赖
         missing_deps = self._check_dependencies()

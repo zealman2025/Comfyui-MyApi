@@ -10,11 +10,10 @@
 
 ## ✨ 主要特性
 
-- 🔑 **双重API密钥机制** - 支持节点输入和配置文件两种密钥管理方式
+- 🔑 **节点内填写密钥** - API 密钥在各节点 `api_key` 中填写（不读取本地 `config.json`）
 - 🖼️ **多模态支持** - 文本生成、图像理解、图像生成一应俱全
 - 🎯 **多服务集成** - 支持Qwen、豆包、DeepSeek、XAI Grok等主流AI服务
-- 🛠️ **灵活配置** - 可自定义模型列表和参数设置
-- 🔄 **智能回退** - 配置加载失败时自动使用默认模型
+- 🛠️ **灵活配置** - 各节点参数与模型列表以代码内默认为准（可按需改源码中的模型字典）
 - 📝 **详细日志** - 完整的调试信息和错误提示
 - 🎨 **图像处理工具** - 文本分割等实用工具
 
@@ -44,89 +43,29 @@
 - **📝 文本分割** - 按关键词分割文本，支持包含/排除关键词，最多20个输出
 
 
-## 🔑 双重API密钥机制
+## 🔑 API 密钥
 
-本插件支持两种API密钥管理方式，按优先级自动选择：
-
-### **优先级1: 节点输入**
-在每个节点的第一个输入框中直接输入API密钥，适用于：
-- 临时切换不同的API密钥
-- 测试新的API密钥
-- 分享工作流时保护隐私
-
-### **优先级2: 配置文件**
-在`config.json`中预设API密钥，适用于：
-- 日常使用的常用密钥
-- 避免重复输入
-- 批量管理多个密钥
-
-## ⚙️ 配置文件设置
-
-### 1. 初始化配置文件
-首先将`config.json.example`重命名为`config.json`（避免更新时覆盖您的配置）
-
-### 2. 配置文件结构
-```json
-{
-    "qwen_api_key": "你的apikey",
-    "doubao_api_key": "你的apikey",
-    "xai_api_key": "你的apikey",
-    "bizyair_api_key": "你的apikey",
-    "deepseek_api_key": "你的apikey",
-    "models": {
-        "qwen": {
-            "qwen3.5-plus": "qwen3.5-plus"
-        },
-        "qwen_image_edit": {
-            "qwen-image-2.0-pro": "Qwen Image 2.0 Pro"
-        },
-        "doubao": {
-            "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro"
-        },
-        "doubao_seedream5": {
-            "doubao-seedream-4-5-251128": "豆包SEEDREAM 5"
-        },
-        "doubao_translation": {
-            "doubao-seed-translation-250915": "豆包Seed翻译模型"
-        },
-        "xai": {
-            "grok-2-vision-1212": "Grok 2 Vision 1212",
-            "grok-4": "grok-4"
-        },
-        "deepseek": {
-            "deepseek-chat": "DeepSeek Chat",
-            "deepseek-reasoner": "DeepSeek Reasoner"
-        }
-    }
-}
-```
+各服务的 API 密钥请在对应节点的 **`api_key`** 输入框中填写。本插件**不再**读取插件目录下的 `config.json`；模型下拉列表以各节点源码中的默认字典为准（需要时可自行改源码扩展）。
 
 ## 🔧 API密钥获取指南
-
-### 🔎 Qwen (通义千问)
-- **官网**: https://bailian.console.aliyun.com/?tab=api#/api
-- **说明**: 阿里云百炼平台，国内可直接访问
-- **配置**: `qwen_api_key`
 
 ### 🥟 豆包 (Doubao)
 - **官网**: https://www.volcengine.com/experience/ark
 - **说明**: 字节跳动火山引擎，国内可直接访问
-- **配置**: `doubao_api_key`
-
-### 🚀 XAI Grok
-- **官网**: https://x.ai/api
-- **说明**: xAI官方API，需要魔法上网
-- **配置**: `xai_api_key`
+- **节点**: 在豆包相关节点的 `api_key` 中填写
 
 ### 🌐 BizyAir
 - **官网**: https://bizyair.cn
 - **说明**: BizyAir图像生成平台，需要充值金币，国内可直接访问
-- **配置**: `bizyair_api_key`
+- **节点**: 在 BizyAir 节点的 `api_key` 中填写
 
 ### 🔎 DeepSeek
 - **官网**: https://platform.deepseek.com/
 - **说明**: DeepSeek AI平台，支持深度推理模型，国内可直接访问
-- **配置**: `deepseek_api_key`
+- **节点**: 在 DeepSeek 节点的 `api_key` 中填写
+
+### 🍎 AutodL
+- **说明**: 使用节点内 `api_key`，端点为 `https://www.autodl.art/api/v1`（详见节点说明）
 
 ## 📋 节点详细功能
 
