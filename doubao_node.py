@@ -40,7 +40,14 @@ except ImportError:
     HAS_REQUESTS = False
 
 DOUBAO_MODELS = {
-    "Doubao-seed-2.0-Pro": "Doubao-seed-2.0-Pro",
+    "doubao-seed-2-0-pro-260215": "doubao-seed-2-0-pro-260215",
+}
+
+REASONING_EFFORT_OPTIONS = {
+    "不思考（minimal）": "minimal",
+    "轻量思考（low）": "low",
+    "均衡思考（medium）": "medium",
+    "深度思考（high）": "high",
 }
 
 class DoubaoNode:
@@ -67,6 +74,18 @@ class DoubaoNode:
             return input_api_key.strip()
         return ""
 
+    def _resolve_model_name(self, selected_model):
+        """使用下拉选择的模型 ID。"""
+        resolved_model = DOUBAO_MODELS.get(selected_model, selected_model)
+        print(f"[DoubaoMMM] 使用下拉模型: {resolved_model}")
+        return resolved_model
+
+    def _resolve_reasoning_effort(self, reasoning_effort):
+        """将 UI 中文选项转换为 API 需要的英文枚举值。"""
+        resolved_reasoning_effort = REASONING_EFFORT_OPTIONS.get(reasoning_effort, reasoning_effort)
+        print(f"[DoubaoMMM] Reasoning effort: {resolved_reasoning_effort}")
+        return resolved_reasoning_effort
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -74,15 +93,16 @@ class DoubaoNode:
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "model": (list(DOUBAO_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "图片主要讲了什么?"}),
-                "max_completion_tokens": ("INT", {"default": 65535, "min": 1, "max": 65535}),
-                "temperature": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0}),
-                "top_p": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0}),
+                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 65535}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7fffffff}),
-                "reasoning_effort": (["minimal", "low", "medium", "high"], {"default": "minimal"}),
+                "reasoning_effort": (list(REASONING_EFFORT_OPTIONS.keys()), {"default": "均衡思考（medium）"}),
             },
             "optional": {
                 "image": ("IMAGE",),
                 "image_2": ("IMAGE",),
+                "image_3": ("IMAGE",),
+                "image_4": ("IMAGE",),
+                "image_5": ("IMAGE",),
             }
         }
 
@@ -259,7 +279,7 @@ class DoubaoNode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, api_key, model, prompt, max_completion_tokens=65535, temperature=1.0, top_p=0.7, seed=0, reasoning_effort="minimal", image=None, image_2=None):
+    def process(self, api_key, model, prompt, max_tokens=4096, seed=0, reasoning_effort="均衡思考（medium）", image=None, image_2=None, image_3=None, image_4=None, image_5=None):
         """主处理函数"""
         # 应用种子值
         if seed == 0:  # 0表示使用当前种子
@@ -274,6 +294,9 @@ class DoubaoNode:
             print(f"[DoubaoMMM] Processing request with model: {model}")
             print(f"[DoubaoMMM] Image 1 provided: {image is not None}")
             print(f"[DoubaoMMM] Image 2 provided: {image_2 is not None}")
+            print(f"[DoubaoMMM] Image 3 provided: {image_3 is not None}")
+            print(f"[DoubaoMMM] Image 4 provided: {image_4 is not None}")
+            print(f"[DoubaoMMM] Image 5 provided: {image_5 is not None}")
             print(f"[DoubaoMMM] Using seed: {seed}")
             print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
             
@@ -281,12 +304,15 @@ class DoubaoNode:
             actual_api_key = self._get_api_key(api_key)
             if not actual_api_key:
                 return ("Error: 请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。",)
+
+            actual_model = self._resolve_model_name(model)
+            actual_reasoning_effort = self._resolve_reasoning_effort(reasoning_effort)
             
             # 使用豆包API，针对深度思考模型设置更长的超时时间
             # 1.8版本支持reasoning_effort，可能需要更长的处理时间
-            timeout_value = 1800 if "1-8" in model or "1-6" in model else 60
+            timeout_value = 1800 if "1-8" in actual_model or "1-6" in actual_model else 60
 
-            print(f"[DoubaoMMM] Calling Doubao API with model: {model}")
+            print(f"[DoubaoMMM] Calling Doubao API with model: {actual_model}")
             
             # 使用标准的 /api/v3/chat/completions 端点（支持所有参数）
             url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
@@ -298,38 +324,26 @@ class DoubaoNode:
             # 构建消息内容（支持OpenAI兼容格式）
             user_content = []
             
-            # 处理图像输入（支持两张图像）
-            if image is not None:
+            # 处理图像输入（最多支持 5 张图像）
+            images = [image, image_2, image_3, image_4, image_5]
+            for index, current_image in enumerate(images, start=1):
+                if current_image is None:
+                    continue
+
                 try:
-                    print(f"Processing image 1 for API...")
-                    image_base64 = self._encode_image_to_base64(image)
+                    print(f"Processing image {index} for API...")
+                    image_base64 = self._encode_image_to_base64(current_image)
                     user_content.append({
                         "type": "image_url",
                         "image_url": {
                             "url": f"data:image/jpeg;base64,{image_base64}"
                         }
                     })
-                    print("Successfully added image 1 to message")
+                    print(f"Successfully added image {index} to message")
                 except Exception as e:
-                    print(f"Error processing image 1: {str(e)}")
+                    print(f"Error processing image {index}: {str(e)}")
                     print(traceback.format_exc())
-                    return (f"Error processing image 1: {str(e)}",)
-            
-            if image_2 is not None:
-                try:
-                    print(f"Processing image 2 for API...")
-                    image2_base64 = self._encode_image_to_base64(image_2)
-                    user_content.append({
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image2_base64}"
-                        }
-                    })
-                    print("Successfully added image 2 to message")
-                except Exception as e:
-                    print(f"Error processing image 2: {str(e)}")
-                    print(traceback.format_exc())
-                    return (f"Error processing image 2: {str(e)}",)
+                    return (f"Error processing image {index}: {str(e)}",)
             
             # 添加文本提示
             user_content.append({"type": "text", "text": prompt})
@@ -342,24 +356,16 @@ class DoubaoNode:
             
             # 构建请求payload
             payload = {
-                "model": model,
+                "model": actual_model,
                 "messages": messages
             }
             
-            # 添加max_completion_tokens（支持所有版本）
-            if max_completion_tokens and max_completion_tokens > 0:
-                payload["max_completion_tokens"] = max_completion_tokens
+            # 仅保留 max_tokens，避免与 max_completion_tokens 同时设置
+            if max_tokens and max_tokens > 0:
+                payload["max_tokens"] = max_tokens
             
-            # 1.8版本添加reasoning_effort参数
-            is_1_8_model = "1-8" in model or "251228" in model
-            if is_1_8_model:
-                if reasoning_effort:
-                    payload["reasoning_effort"] = reasoning_effort
-                    print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
-            else:
-                # 对于其他版本，添加 temperature 和 top_p 参数
-                payload["temperature"] = temperature
-                payload["top_p"] = top_p
+            if actual_reasoning_effort:
+                payload["reasoning_effort"] = actual_reasoning_effort
             
             print(f"[DoubaoMMM] API端点: {url}")
             print(f"[DoubaoMMM] 请求payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
@@ -384,12 +390,12 @@ class DoubaoNode:
                 if resp.status_code == 401:
                     return ("Error: 身份验证失败(401)。请确认节点中填写的 API 密钥正确且未含多余空格。若仍失败，请用该 key 以 cURL 调用验证。",)
                 elif resp.status_code == 404:
-                    error_detail = f"模型 '{model}' 不存在或您没有访问权限。\n"
+                    error_detail = f"模型/接入点 '{actual_model}' 不存在或您没有访问权限。\n"
                     error_detail += f"请检查：\n"
-                    error_detail += f"1. 模型名称是否正确\n"
+                    error_detail += f"1. 模型名称或接入点 ID 是否正确\n"
                     error_detail += f"2. 您的账户是否有权限访问该模型\n"
                     error_detail += f"3. 模型是否已发布或需要特殊申请\n"
-                    error_detail += f"4. 可尝试使用其他可用模型：Doubao-seed-2.0-Pro\n"
+                    error_detail += f"4. 可先尝试模型 ID：doubao-seed-2-0-pro-260215\n"
                     error_detail += f"\n原始错误: {err_message}"
                     return (f"Error: {resp.status_code} - {error_detail}",)
                 return (f"Error: {resp.status_code} - {err_message}",)
