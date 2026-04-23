@@ -407,5 +407,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "BizyAirNanoBananaProNode": "🌐BizyAir NanoBanana2 (与主插件一致)"
+    "BizyAirNanoBananaProNode": "🌐BizyAir NanoBanana2"
 }

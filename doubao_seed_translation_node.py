@@ -92,7 +92,7 @@ class DoubaoSeedTranslationNode:
         }
 
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("translated_text",)
+    RETURN_NAMES = ("string",)
     FUNCTION = "translate"
     CATEGORY = "🍎MYAPI"
 

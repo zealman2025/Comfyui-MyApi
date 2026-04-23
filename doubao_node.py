@@ -107,6 +107,7 @@ class DoubaoNode:
         }
 
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("string",)
     FUNCTION = "process"
     CATEGORY = "🍎MYAPI"
 

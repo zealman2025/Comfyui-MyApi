@@ -18,6 +18,7 @@ class DeepSeekV32ExpNode:
 
     CATEGORY = "🍎MYAPI"
     RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("string",)
     FUNCTION = "process"
 
     @classmethod
@@ -119,6 +120,6 @@ NODE_CLASS_MAPPINGS = {
 
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DeepSeekV32ExpNode": "🔎DeepSeek V3.2 实验版",
+    "DeepSeekV32ExpNode": "🔎DeepSeek V3.2",
 }
 

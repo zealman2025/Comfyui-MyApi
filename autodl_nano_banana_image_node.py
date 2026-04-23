@@ -135,7 +135,7 @@ class AutodlNanoBanana2ImageNode:
         }
 
     RETURN_TYPES = ("IMAGE", "STRING")
-    RETURN_NAMES = ("image", "info")
+    RETURN_NAMES = ("image", "string")
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
@@ -371,5 +371,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "AutodlNanoBanana2ImageNode": "🍎AutodL Nano Banana 2 出图",
+    "AutodlNanoBanana2ImageNode": "🍎AutodL Nano Banana 2",
 }

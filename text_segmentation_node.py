@@ -57,24 +57,13 @@ class SegmentTextNode:
             pass
         return "en"
     
-    # 根据语言获取返回类型名称
-    @classmethod
-    def get_return_names(cls):
-        lang = cls.get_language()
-        if lang == "zh":
-            return tuple([f"{LANG_ZH['segment']}_{i+1}" for i in range(20)])
-        else:
-            return tuple([f"segment_{i+1}" for i in range(20)])
-    
     RETURN_TYPES = tuple(["STRING"] * 20)
-    RETURN_NAMES = tuple([f"segment_{i+1}" for i in range(20)])
+    RETURN_NAMES = tuple([f"string_{i + 1}" for i in range(20)])
     FUNCTION = "segment_text"
     CATEGORY = "🍎MYAPI"
-    
+
     def __init__(self):
-        # 在初始化时根据语言设置更新RETURN_NAMES
-        if self.get_language() == "zh":
-            self.__class__.RETURN_NAMES = tuple([f"{LANG_ZH['segment']}_{i+1}" for i in range(20)])
+        pass
     
     def segment_text(self, **kwargs):
         # 获取参数，处理中英文参数名称
