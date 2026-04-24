@@ -32,11 +32,11 @@ except ImportError:
     HAS_REQUESTS = False
 
 DOUBAO_SEEDREAM5_MODELS = {
-    "doubao-seedream-4-5-251128": "豆包SEEDREAM 5",
+    "doubao-seedream-4-5-251128": "豆包 SEEDREAM 4.5",
 }
 
 class DoubaoSeedream5Node:
-    """豆包 SEEDREAM 5 图像生成节点"""
+    """豆包 SEEDREAM 4.5 图像生成节点"""
     
     def __init__(self):
         self.current_seed = 21
@@ -668,5 +668,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DoubaoSeedream5Node": "🥟豆包 SEEDREAM 5"
+    "DoubaoSeedream5Node": "🥟豆包 SEEDREAM 4.5"
 }

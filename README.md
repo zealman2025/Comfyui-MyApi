@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
@@ -23,7 +23,7 @@
 | 节点 | 服务 | 图像输入 | 主要参数 | 适用场景 |
 |------|------|---------|----------|----------|
 | 🥟 豆包MMM | 火山引擎 Doubao | 最多 5 张 | `model`、`max_tokens`、`reasoning_effort`（中文显示）、`seed` | 多模态理解、思维链推理、图文对比分析 |
-| 🔎 DeepSeek V3.2 | DeepSeek | 0 张 | `model`、`system_prompt`、`temperature`、`max_tokens`、`top_p`、`stream` | 长文本理解、代码生成、推理对话 |
+| 🔎 DeepSeek V4 | DeepSeek | 0 张 | `model`（`deepseek-v4-pro` / `deepseek-v4-flash`）、`enable_thinking`（默认开启）、`reasoning_effort`（高/最大）、`system_prompt`、`max_tokens`、`stream`；输出 `string` + `reasoning` | 长文本理解、代码生成、思考模式推理 |
 | 🍎 AutodL API | AutoDL 中转 | 最多 5 张 | `model`、`system_prompt`、`user_prompt`、`seed` | 通过 AutoDL 中转访问的多模态聊天 |
 
 ### 翻译
@@ -39,7 +39,7 @@
 | 🌐 BizyAir NanoBanana2 | BizyAir | 1–6 张（动态） | `prompt`、`aspect_ratio`、`resolution`、`inputcount`、`mode` | 多图融合 / 编辑，需 BizyAir 充值金币 |
 | 🌐 BizyAir GPT-IMAGE-2 文生图 | BizyAir | 0 张 | `prompt`、`aspect_ratio` | 纯文本驱动的图像生成 |
 | 🌐 BizyAir GPT-IMAGE-2 图生图 | BizyAir | 1–4 张（动态） | `prompt`、`aspect_ratio`、`inputcount` | 多参考图驱动的图像合成 |
-| 🥟 豆包 SEEDREAM 5 | 火山引擎 Doubao | 自定义 | `prompt`、`size`/`custom_width`/`custom_height`、`seed`、`watermark`、`stream` | 自定义尺寸的高质量图像生成 |
+| 🥟 豆包 SEEDREAM 4.5 | 火山引擎 Doubao | 自定义 | `prompt`、`size`/`custom_width`/`custom_height`、`seed`、`watermark`、`stream` | 自定义尺寸的高质量图像生成 |
 | 🍎 AutodL Nano Banana 2 | AutoDL 中转 | 1 张 | `prompt`、`aspect_ratio`、`image_resolution`、`seed` | 通过 AutoDL 中转的图像生成 / 编辑 |
 
 GPT-IMAGE-2 系列支持的宽高比：`1:1 / 2:3 / 3:2 / 3:4 / 4:3 / 4:5 / 5:4 / 9:16 / 16:9 / 21:9`。
