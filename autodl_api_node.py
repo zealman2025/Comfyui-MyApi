@@ -46,6 +46,7 @@ AUTODL_MODELS = (
     "gpt-5.4-mini",
     "gpt-5.4-nano",
     "gpt-5.4",
+    "gpt-5.5",
     "gemini-3.1-pro-preview",
 )
 
