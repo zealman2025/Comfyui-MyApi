@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.0.3-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
@@ -12,6 +12,7 @@
 - 🎯 **多服务集成**：豆包、DeepSeek、BizyAir、AutoDL 等主流 AI 服务一站式接入
 - 🧩 **统一输出规范**：所有字符串输出端口统一命名为 `string`，便于上下游连接
 - 🪄 **动态图片输入**：BizyAir 系列节点提供 `inputcount` 数量控制和「更新图片输入」按钮，动态增减图像端口
+- 📤 **SSH 文件上传**：将工作流中的图片、音频、文本、模型文件或本地目录上传到 SSH 服务器
 - 📦 **自动安装依赖**：首次加载时自动按 `requirements.txt` 安装缺失依赖（可通过环境变量关闭）
 
 ## 节点一览
@@ -50,6 +51,12 @@ GPT-IMAGE-2 系列支持的宽高比：`1:1 / 2:3 / 3:2 / 3:4 / 4:3 / 4:5 / 5:4 
 |------|---------|----------|
 | 📝 文本分割 | 按关键词分割文本，支持包含 / 排除关键词，最多 20 段输出（`string_1` … `string_20`） | 提示词预处理、批量任务拆分 |
 
+### 文件传输 / SSH 上传
+
+| 节点 | 输入 | 主要参数 | 输出 | 适用场景 |
+|------|------|---------|------|----------|
+| 📤 SSH 文件上传 | `anyting` 通配输入 | `ssh_command`、`server`、`port`、`username`、`password`、`remote_dir`、`remote_filename` | `upload_info` | 将图片、音频、文本、模型文件、视频路径或本地目录上传到远程服务器 |
+
 ### 输出端口规范
 
 - 所有图像输出端口统一为 `image`
@@ -63,6 +70,34 @@ GPT-IMAGE-2 系列支持的宽高比：`1:1 / 2:3 / 3:2 / 3:4 / 4:3 / 4:5 / 5:4 
 2. 节点底部的 `更新图片输入` 按钮可以手动触发同步
 
 不会删除已有连线的低位端口，只会清理超过 `inputcount` 的尾部端口。重启 ComfyUI 或刷新前端页面后即可看到效果。
+
+## SSH 文件上传
+
+`📤 SSH 文件上传` 节点用于把 ComfyUI 工作流中的文件或内容通过 SFTP 上传到目标服务器，节点位于 `🍎MYAPI` 分类。
+
+### 连接信息
+
+- `ssh_command`：可直接粘贴 `ssh -p 21656 root@connect.bjb2.seetacloud.com` 这类命令
+- `server` / `port` / `username`：前端 JS 会根据 `ssh_command` 自动填写，也可手动修改
+- `password`：SSH 密码，仅在本地用于连接目标服务器
+- `remote_dir`：远端目标目录，例如 `/root/uploads`
+- `remote_filename`：远端文件名模板，默认 `{stem}_{timestamp_ms}{ext}`
+
+`remote_filename` 支持 `{basename}`、`{stem}`、`{ext}`、`{timestamp_ms}`、`{timestamp}`、`{uuid}` 占位符。批量工作流建议保留时间戳或 UUID，避免同名覆盖。
+
+### 支持的输入
+
+`anyting` 是通配输入端口，常见输入会按以下方式处理：
+
+- 本地文件路径：直接上传原文件，适合 LoRA、Checkpoint、视频、压缩包等任意文件
+- 本地目录路径：递归上传整个目录，保留子目录结构
+- `IMAGE` 张量：临时保存为 PNG 后上传
+- 常见 `AUDIO` 字典：临时保存为 WAV 后上传
+- 文本字符串：若不是本地路径，则保存为 TXT 后上传
+- `bytes` / `bytearray`：保存为 BIN 后上传
+- 普通字典：优先识别音频 / 文本，否则保存为 JSON 后上传
+
+上传结果只输出一个 `upload_info` 字符串，内容为 JSON，包含 `success`、`local_path`、`remote_path`、`file_url`、`file_size`、`file_count`、`uploaded_size`、`uploaded_count`、`error` 等字段。
 
 ## API 密钥
 

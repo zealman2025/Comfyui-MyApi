@@ -1,9 +1,10 @@
 import os
 import subprocess
 import sys
+import hashlib
 
 # 插件版本号
-__version__ = "2.0.1"
+__version__ = "2.0.3"
 
 # 在启动时打印版本信息
 print(f"[Comfyui-MyApi] 插件版本: {__version__}")
@@ -26,8 +27,19 @@ def _ensure_requirements_installed():
     if not os.path.exists(requirements_path):
         return
 
+    try:
+        with open(requirements_path, "rb") as req_file:
+            requirements_hash = hashlib.sha256(req_file.read()).hexdigest()
+    except Exception:
+        requirements_hash = ""
+
     if os.path.exists(marker_path):
-        return
+        try:
+            with open(marker_path, "r", encoding="utf-8") as marker:
+                if marker.read().strip() == requirements_hash:
+                    return
+        except Exception:
+            pass
 
     try:
         print("[Comfyui-MyApi] 正在自动安装依赖...")
@@ -35,7 +47,7 @@ def _ensure_requirements_installed():
             [sys.executable, "-m", "pip", "install", "-r", requirements_path]
         )
         with open(marker_path, "w", encoding="utf-8") as marker:
-            marker.write("installed")
+            marker.write(requirements_hash)
         print("[Comfyui-MyApi] 依赖安装完成。")
     except Exception as exc:
         print(f"[Comfyui-MyApi] 自动安装依赖失败：{exc}")
@@ -53,6 +65,7 @@ from .doubao_seed_translation_node import NODE_CLASS_MAPPINGS as DOUBAO_SEED_TRA
 from .autodl_api_node import NODE_CLASS_MAPPINGS as AUTODL_API_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as AUTODL_API_NODE_DISPLAY_NAME_MAPPINGS
 from .autodl_nano_banana_image_node import NODE_CLASS_MAPPINGS as AUTODL_NANO_IMAGE_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as AUTODL_NANO_IMAGE_NODE_DISPLAY_NAME_MAPPINGS
 from .text_segmentation_node import NODE_CLASS_MAPPINGS as TEXT_SEGMENTATION_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as TEXT_SEGMENTATION_NODE_DISPLAY_NAME_MAPPINGS
+from .ssh_file_upload_node import NODE_CLASS_MAPPINGS as SSH_FILE_UPLOAD_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as SSH_FILE_UPLOAD_NODE_DISPLAY_NAME_MAPPINGS
 # 合并所有节点映射（按类别分组排序）
 NODE_CLASS_MAPPINGS = {}
 # BizyAir 系列
@@ -69,6 +82,8 @@ NODE_CLASS_MAPPINGS.update(AUTODL_API_NODE_CLASS_MAPPINGS)
 NODE_CLASS_MAPPINGS.update(AUTODL_NANO_IMAGE_NODE_CLASS_MAPPINGS)
 # 文本处理系列
 NODE_CLASS_MAPPINGS.update(TEXT_SEGMENTATION_NODE_CLASS_MAPPINGS)
+# 文件处理系列
+NODE_CLASS_MAPPINGS.update(SSH_FILE_UPLOAD_NODE_CLASS_MAPPINGS)
 
 # 初始化显示名称映射并合并（按类别分组排序）
 NODE_DISPLAY_NAME_MAPPINGS = {}
@@ -85,6 +100,8 @@ NODE_DISPLAY_NAME_MAPPINGS.update(AUTODL_API_NODE_DISPLAY_NAME_MAPPINGS)
 NODE_DISPLAY_NAME_MAPPINGS.update(AUTODL_NANO_IMAGE_NODE_DISPLAY_NAME_MAPPINGS)
 # 文本处理系列
 NODE_DISPLAY_NAME_MAPPINGS.update(TEXT_SEGMENTATION_NODE_DISPLAY_NAME_MAPPINGS)
+# 文件处理系列
+NODE_DISPLAY_NAME_MAPPINGS.update(SSH_FILE_UPLOAD_NODE_DISPLAY_NAME_MAPPINGS)
 
 # 暴露前端扩展目录，加载自定义 JS（用于动态图片输入端口等交互）
 WEB_DIRECTORY = "./web"

@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-myapi"
 description = "ComfyUI 多模态 AI 节点集合：豆包、DeepSeek、BizyAir、AutoDL 等服务一站式接入。"
-version = "2.0.1"
+version = "2.0.3"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
 dependencies = [
@@ -10,6 +10,7 @@ dependencies = [
     "requests",
     "Pillow",
     "numpy",
+    "paramiko",
 ]
 
 [project.urls]
