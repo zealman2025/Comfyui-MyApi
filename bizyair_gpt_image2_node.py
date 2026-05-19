@@ -49,7 +49,15 @@ GPT_IMAGE_2_I2I_REF_NODE_KEYS = [
     "37:LoadImage.image",
     "39:LoadImage.image",
     "46:LoadImage.image",
+    "48:LoadImage.image",
+    "52:LoadImage.image",
+    "58:LoadImage.image",
+    "59:LoadImage.image",
+    "60:LoadImage.image",
+    "61:LoadImage.image",
 ]
+
+GPT_IMAGE_2_RESOLUTIONS = ["1k", "2k", "4k"]
 
 GPT_IMAGE_2_ASPECT_RATIOS = [
     "1:1",
@@ -249,6 +257,7 @@ class BizyAirGPTImage2T2INode:
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "9:16"}),
+                "resolution": (GPT_IMAGE_2_RESOLUTIONS, {"default": "1k"}),
             }
         }
 
@@ -257,7 +266,7 @@ class BizyAirGPTImage2T2INode:
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
-    def generate(self, api_key, prompt, aspect_ratio):
+    def generate(self, api_key, prompt, aspect_ratio, resolution):
         log_prefix = "BizyAirGPTImage2T2I"
         actual_api_key = _get_api_key(api_key, log_prefix)
         if not actual_api_key:
@@ -286,6 +295,7 @@ class BizyAirGPTImage2T2INode:
             input_values = {
                 f"{GPT_IMAGE_2_T2I_NODE_PREFIX}.prompt": prompt,
                 f"{GPT_IMAGE_2_T2I_NODE_PREFIX}.aspect_ratio": aspect_ratio,
+                f"{GPT_IMAGE_2_T2I_NODE_PREFIX}.resolution": resolution,
             }
 
             data = {
@@ -295,7 +305,8 @@ class BizyAirGPTImage2T2INode:
             }
 
             print(
-                f"[{log_prefix}] Prompt: {prompt[:100]}..., Aspect: {aspect_ratio}"
+                f"[{log_prefix}] Prompt: {prompt[:100]}..., "
+                f"Aspect: {aspect_ratio}, Resolution: {resolution}"
             )
             print(
                 f"[{log_prefix}] Request payload: "
@@ -338,7 +349,7 @@ class BizyAirGPTImage2T2INode:
             status_text = (
                 f"✅ GPT-IMAGE-2 T2I 生成成功\n"
                 f"提示词: {prompt[:50]}...\n"
-                f"宽高比: {aspect_ratio}\n"
+                f"宽高比: {aspect_ratio}, 分辨率: {resolution}\n"
                 f"耗时: {cost_time}ms\n"
                 f"请求ID: {request_id}"
             )
@@ -358,7 +369,7 @@ class BizyAirGPTImage2T2INode:
 
 
 class BizyAirGPTImage2I2INode:
-    """BizyAir GPT-IMAGE-2 图生图节点（最多 4 张参考图）"""
+    """BizyAir GPT-IMAGE-2 图生图节点（最多 10 张参考图）"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -367,13 +378,20 @@ class BizyAirGPTImage2I2INode:
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "9:16"}),
-                "inputcount": ("INT", {"default": 1, "min": 1, "max": 4, "step": 1}),
+                "resolution": (GPT_IMAGE_2_RESOLUTIONS, {"default": "1k"}),
+                "inputcount": ("INT", {"default": 1, "min": 1, "max": 10, "step": 1}),
             },
             "optional": {
                 "image": ("IMAGE",),
                 "image2": ("IMAGE",),
                 "image3": ("IMAGE",),
                 "image4": ("IMAGE",),
+                "image5": ("IMAGE",),
+                "image6": ("IMAGE",),
+                "image7": ("IMAGE",),
+                "image8": ("IMAGE",),
+                "image9": ("IMAGE",),
+                "image10": ("IMAGE",),
             },
         }
 
@@ -387,11 +405,18 @@ class BizyAirGPTImage2I2INode:
         api_key,
         prompt,
         aspect_ratio,
+        resolution,
         inputcount,
         image=None,
         image2=None,
         image3=None,
         image4=None,
+        image5=None,
+        image6=None,
+        image7=None,
+        image8=None,
+        image9=None,
+        image10=None,
     ):
         log_prefix = "BizyAirGPTImage2I2I"
         actual_api_key = _get_api_key(api_key, log_prefix)
@@ -410,7 +435,7 @@ class BizyAirGPTImage2I2INode:
         if image is None:
             raise Exception("GPT-IMAGE-2 图生图至少需要一张参考图 (image)")
 
-        inputcount = max(1, min(int(inputcount), 4))
+        inputcount = max(1, min(int(inputcount), 10))
 
         try:
             print(
@@ -425,12 +450,24 @@ class BizyAirGPTImage2I2INode:
 
             add_log = lambda t, m: print(f"[{log_prefix}][{t}] {m}")
 
-            ref_images = [image, image2, image3, image4]
+            ref_images = [
+                image,
+                image2,
+                image3,
+                image4,
+                image5,
+                image6,
+                image7,
+                image8,
+                image9,
+                image10,
+            ]
             ref_images = ref_images[:inputcount]
 
             input_values = {
                 f"{GPT_IMAGE_2_I2I_NODE_PREFIX}.prompt": prompt,
                 f"{GPT_IMAGE_2_I2I_NODE_PREFIX}.aspect_ratio": aspect_ratio,
+                f"{GPT_IMAGE_2_I2I_NODE_PREFIX}.resolution": resolution,
             }
 
             uploaded_count = 0
@@ -470,7 +507,7 @@ class BizyAirGPTImage2I2INode:
 
             print(
                 f"[{log_prefix}] Prompt: {prompt[:100]}..., Aspect: {aspect_ratio}, "
-                f"inputcount: {uploaded_count}"
+                f"Resolution: {resolution}, inputcount: {uploaded_count}"
             )
             print(
                 f"[{log_prefix}] Request payload: "
@@ -513,7 +550,7 @@ class BizyAirGPTImage2I2INode:
             status_text = (
                 f"✅ GPT-IMAGE-2 I2I 生成成功\n"
                 f"提示词: {prompt[:50]}...\n"
-                f"宽高比: {aspect_ratio}, 参考图: {uploaded_count}\n"
+                f"宽高比: {aspect_ratio}, 分辨率: {resolution}, 参考图: {uploaded_count}\n"
                 f"耗时: {cost_time}ms\n"
                 f"请求ID: {request_id}"
             )

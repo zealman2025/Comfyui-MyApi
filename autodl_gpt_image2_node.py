@@ -1,9 +1,9 @@
 """
-AutodL Nano Banana 2 — 官方 Gemini generateContent API（经 AutoDL 中转）
+AutodL GPT-IMAGE-2 — OpenAI Responses API（经 AutoDL 中转）
 
-- 文生图：仅 prompt
-- 图生图：prompt + 最多 14 张参考图
-- 参数：aspect_ratio、image_size（0.5K/1K/2K/4K），与 Google 官方 imageConfig 一致
+- 文生图：responses + image_generation tool (action=generate)
+- 图生图：responses + input_image + image_generation tool (action=edit)
+- UI：resolution + aspect_ratio 映射为官方 size；quality 与官方一致
 """
 
 import random
@@ -11,45 +11,35 @@ import traceback
 
 try:
     from .autodl_common import (
+        GPT_IMAGE2_ASPECT_RATIOS,
+        GPT_IMAGE2_RESOLUTIONS,
         blank_image,
-        call_gemini_image,
+        call_responses_image,
         check_image_deps,
         get_api_key,
+        map_gpt_image2_size,
         status_json,
     )
 except ImportError:
     from autodl_common import (
+        GPT_IMAGE2_ASPECT_RATIOS,
+        GPT_IMAGE2_RESOLUTIONS,
         blank_image,
-        call_gemini_image,
+        call_responses_image,
         check_image_deps,
         get_api_key,
+        map_gpt_image2_size,
         status_json,
     )
 
-NANOBANANA2_MODEL = "nano-banana-2"
+GPT_IMAGE2_MODEL = "gpt-image-2"
+GPT_IMAGE2_ORCHESTRATOR = "gpt-5.4"
 
-NANOBANANA2_ASPECT_RATIOS = [
-    "1:1",
-    "2:3",
-    "3:2",
-    "3:4",
-    "4:3",
-    "4:5",
-    "5:4",
-    "9:16",
-    "16:9",
-    "21:9",
-    "1:4",
-    "4:1",
-    "1:8",
-    "8:1",
-]
-
-NANOBANANA2_IMAGE_SIZES = ("0.5K", "1K", "2K", "4K")
+GPT_IMAGE2_QUALITIES = ["low", "medium", "high", "auto"]
 
 
-class AutodlNanoBanana2T2INode:
-    """AutodL Nano Banana 2 文生图（Gemini generateContent）"""
+class AutodlGPTImage2T2INode:
+    """AutodL GPT-IMAGE-2 文生图（Responses API）"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -57,8 +47,9 @@ class AutodlNanoBanana2T2INode:
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
-                "aspect_ratio": (NANOBANANA2_ASPECT_RATIOS, {"default": "16:9"}),
-                "image_size": (list(NANOBANANA2_IMAGE_SIZES), {"default": "1K"}),
+                "quality": (GPT_IMAGE2_QUALITIES, {"default": "medium"}),
+                "resolution": (GPT_IMAGE2_RESOLUTIONS, {"default": "1K"}),
+                "aspect_ratio": (GPT_IMAGE2_ASPECT_RATIOS, {"default": "16:9"}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7FFFFFFF}),
             }
         }
@@ -69,11 +60,11 @@ class AutodlNanoBanana2T2INode:
     CATEGORY = "🍎MYAPI"
 
     @classmethod
-    def IS_CHANGED(cls, api_key, prompt, aspect_ratio, image_size, seed):
+    def IS_CHANGED(cls, api_key, prompt, quality, resolution, aspect_ratio, seed):
         key_seed = random.random() if int(seed) == 0 else int(seed)
-        return (key_seed, prompt or "", aspect_ratio, image_size)
+        return (key_seed, prompt or "", quality, resolution, aspect_ratio)
 
-    def generate(self, api_key, prompt, aspect_ratio, image_size, seed):
+    def generate(self, api_key, prompt, quality, resolution, aspect_ratio, seed):
         _ = seed
         missing = check_image_deps(require_torch=True)
         if missing:
@@ -87,24 +78,35 @@ class AutodlNanoBanana2T2INode:
             return blank_image(), "Error: 请填写 prompt。"
 
         try:
-            image, info = call_gemini_image(
+            size = map_gpt_image2_size(resolution, aspect_ratio)
+            image, raw = call_responses_image(
                 key,
-                NANOBANANA2_MODEL,
                 str(prompt).strip(),
-                aspect_ratio=aspect_ratio,
-                image_size=image_size,
+                orchestrator_model=GPT_IMAGE2_ORCHESTRATOR,
+                image_model=GPT_IMAGE2_MODEL,
+                quality=quality,
+                size=size,
+                action="generate",
             )
-            info["mode"] = "文生图"
-            info["protocol"] = "gemini generateContent"
-            return image, status_json(**info)
+            return image, status_json(
+                mode="文生图",
+                protocol="responses",
+                model=GPT_IMAGE2_MODEL,
+                orchestrator=GPT_IMAGE2_ORCHESTRATOR,
+                quality=quality,
+                resolution=resolution,
+                aspect_ratio=aspect_ratio,
+                size=size,
+                request_id=raw.get("request_id"),
+            )
         except Exception as e:
-            print(f"[AutodL NanoBanana2 T2I] {e}")
+            print(f"[AutodL GPT-IMAGE-2 T2I] {e}")
             print(traceback.format_exc())
             return blank_image(), f"Error: {e}"
 
 
-class AutodlNanoBanana2I2INode:
-    """AutodL Nano Banana 2 图生图（Gemini generateContent，最多 14 张参考图）"""
+class AutodlGPTImage2I2INode:
+    """AutodL GPT-IMAGE-2 图生图（Responses API，多参考图）"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -112,9 +114,10 @@ class AutodlNanoBanana2I2INode:
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
-                "aspect_ratio": (NANOBANANA2_ASPECT_RATIOS, {"default": "16:9"}),
-                "image_size": (list(NANOBANANA2_IMAGE_SIZES), {"default": "1K"}),
-                "inputcount": ("INT", {"default": 1, "min": 1, "max": 14, "step": 1}),
+                "quality": (GPT_IMAGE2_QUALITIES, {"default": "medium"}),
+                "resolution": (GPT_IMAGE2_RESOLUTIONS, {"default": "1K"}),
+                "aspect_ratio": (GPT_IMAGE2_ASPECT_RATIOS, {"default": "16:9"}),
+                "inputcount": ("INT", {"default": 1, "min": 1, "max": 10, "step": 1}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7FFFFFFF}),
             },
             "optional": {
@@ -128,10 +131,6 @@ class AutodlNanoBanana2I2INode:
                 "image8": ("IMAGE",),
                 "image9": ("IMAGE",),
                 "image10": ("IMAGE",),
-                "image11": ("IMAGE",),
-                "image12": ("IMAGE",),
-                "image13": ("IMAGE",),
-                "image14": ("IMAGE",),
             },
         }
 
@@ -145,8 +144,9 @@ class AutodlNanoBanana2I2INode:
         cls,
         api_key,
         prompt,
+        quality,
+        resolution,
         aspect_ratio,
-        image_size,
         inputcount,
         seed,
         image=None,
@@ -159,21 +159,26 @@ class AutodlNanoBanana2I2INode:
         image8=None,
         image9=None,
         image10=None,
-        image11=None,
-        image12=None,
-        image13=None,
-        image14=None,
     ):
         key_seed = random.random() if int(seed) == 0 else int(seed)
-        refs = [image, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12, image13, image14]
-        return (key_seed, prompt or "", aspect_ratio, image_size, int(inputcount), tuple(x is not None for x in refs))
+        refs = [image, image2, image3, image4, image5, image6, image7, image8, image9, image10]
+        return (
+            key_seed,
+            prompt or "",
+            quality,
+            resolution,
+            aspect_ratio,
+            int(inputcount),
+            tuple(x is not None for x in refs),
+        )
 
     def generate(
         self,
         api_key,
         prompt,
+        quality,
+        resolution,
         aspect_ratio,
-        image_size,
         inputcount,
         seed,
         image=None,
@@ -186,10 +191,6 @@ class AutodlNanoBanana2I2INode:
         image8=None,
         image9=None,
         image10=None,
-        image11=None,
-        image12=None,
-        image13=None,
-        image14=None,
     ):
         _ = seed
         missing = check_image_deps(require_torch=True)
@@ -203,7 +204,7 @@ class AutodlNanoBanana2I2INode:
         if not (prompt and str(prompt).strip()):
             return blank_image(), "Error: 请填写 prompt。"
 
-        inputcount = max(1, min(int(inputcount), 14))
+        inputcount = max(1, min(int(inputcount), 10))
         ref_images = [
             image,
             image2,
@@ -215,10 +216,6 @@ class AutodlNanoBanana2I2INode:
             image8,
             image9,
             image10,
-            image11,
-            image12,
-            image13,
-            image14,
         ]
         ref_images = ref_images[:inputcount]
         ref_images = [img for img in ref_images if img is not None]
@@ -227,30 +224,41 @@ class AutodlNanoBanana2I2INode:
             return blank_image(), "Error: 图生图至少需要一张参考图 (image)。"
 
         try:
-            image_out, info = call_gemini_image(
+            size = map_gpt_image2_size(resolution, aspect_ratio)
+            image_out, raw = call_responses_image(
                 key,
-                NANOBANANA2_MODEL,
                 str(prompt).strip(),
-                aspect_ratio=aspect_ratio,
-                image_size=image_size,
+                orchestrator_model=GPT_IMAGE2_ORCHESTRATOR,
+                image_model=GPT_IMAGE2_MODEL,
+                quality=quality,
+                size=size,
+                action="edit",
                 reference_images=ref_images,
             )
-            info["mode"] = "图生图"
-            info["protocol"] = "gemini generateContent"
-            info["inputcount"] = len(ref_images)
-            return image_out, status_json(**info)
+            return image_out, status_json(
+                mode="图生图",
+                protocol="responses",
+                model=GPT_IMAGE2_MODEL,
+                orchestrator=GPT_IMAGE2_ORCHESTRATOR,
+                quality=quality,
+                resolution=resolution,
+                aspect_ratio=aspect_ratio,
+                size=size,
+                inputcount=len(ref_images),
+                request_id=raw.get("request_id"),
+            )
         except Exception as e:
-            print(f"[AutodL NanoBanana2 I2I] {e}")
+            print(f"[AutodL GPT-IMAGE-2 I2I] {e}")
             print(traceback.format_exc())
             return blank_image(), f"Error: {e}"
 
 
 NODE_CLASS_MAPPINGS = {
-    "AutodlNanoBanana2T2INode": AutodlNanoBanana2T2INode,
-    "AutodlNanoBanana2I2INode": AutodlNanoBanana2I2INode,
+    "AutodlGPTImage2T2INode": AutodlGPTImage2T2INode,
+    "AutodlGPTImage2I2INode": AutodlGPTImage2I2INode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "AutodlNanoBanana2T2INode": "🍎AutodL Nano Banana 2 文生图",
-    "AutodlNanoBanana2I2INode": "🍎AutodL Nano Banana 2 图生图",
+    "AutodlGPTImage2T2INode": "🍎AutodL GPT-IMAGE-2 文生图",
+    "AutodlGPTImage2I2INode": "🍎AutodL GPT-IMAGE-2 图生图",
 }

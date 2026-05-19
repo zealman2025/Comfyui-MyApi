@@ -35,10 +35,44 @@ except ImportError:
     HAS_TORCH = False
     print("Warning: torch library not found. Some features may not work properly.")
 
+
+NANOBANANA2_API_URL = "https://api.bizyair.cn/w/v1/webapp/task/openapi/create"
+NANOBANANA2_WEB_APP_ID = 47114
+NANOBANANA2_NODE_PREFIX = "35:BizyAir_NanoBanana2"
+
+NANOBANANA2_IMAGE_NODE_KEYS = [
+    "40:LoadImage.image",
+    "37:LoadImage.image",
+    "39:LoadImage.image",
+    "46:LoadImage.image",
+    "48:LoadImage.image",
+    "52:LoadImage.image",
+    "54:LoadImage.image",
+    "55:LoadImage.image",
+    "57:LoadImage.image",
+    "56:LoadImage.image",
+]
+
+NANOBANANA2_ASPECT_RATIOS = [
+    "1:1",
+    "2:3",
+    "3:2",
+    "3:4",
+    "4:3",
+    "4:5",
+    "5:4",
+    "9:16",
+    "16:9",
+    "21:9",
+]
+
+NANOBANANA2_RESOLUTIONS = ["1K", "2K", "4K"]
+
+
 class BizyAirNanoBananaProNode:
     """
-    BizyAir NanoBananaPro专用节点
-    专门用于调用BizyAir的NanoBananaPro模型API
+    BizyAir NanoBanana2 专用节点
+    专门用于调用 BizyAir 的 NanoBanana2 模型 API（最多 10 张参考图）
     """
 
     def _get_api_key(self, input_api_key):
@@ -66,10 +100,9 @@ class BizyAirNanoBananaProNode:
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
-                "aspect_ratio": (["auto", "1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], {"default": "9:16"}),
-                "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
-                "inputcount": ("INT", {"default": 6, "min": 1, "max": 6, "step": 1}),
-                "mode": (["third-party", "official"], {"default": "third-party"}),
+                "aspect_ratio": (NANOBANANA2_ASPECT_RATIOS, {"default": "9:16"}),
+                "resolution": (NANOBANANA2_RESOLUTIONS, {"default": "1K"}),
+                "inputcount": ("INT", {"default": 1, "min": 1, "max": 10, "step": 1}),
             },
             "optional": {
                 "image": ("IMAGE",),
@@ -78,6 +111,10 @@ class BizyAirNanoBananaProNode:
                 "image4": ("IMAGE",),
                 "image5": ("IMAGE",),
                 "image6": ("IMAGE",),
+                "image7": ("IMAGE",),
+                "image8": ("IMAGE",),
+                "image9": ("IMAGE",),
+                "image10": ("IMAGE",),
             }
         }
 
@@ -213,9 +250,25 @@ class BizyAirNanoBananaProNode:
             print(traceback.format_exc())
             raise
 
-    def generate(self, api_key, prompt, aspect_ratio, resolution, inputcount, mode,
-                 image=None, image2=None, image3=None, image4=None, image5=None, image6=None):
-        """生成图像（与主插件 ZealmanAIforPS NanoBanana2 6图 API 一致）"""
+    def generate(
+        self,
+        api_key,
+        prompt,
+        aspect_ratio,
+        resolution,
+        inputcount,
+        image=None,
+        image2=None,
+        image3=None,
+        image4=None,
+        image5=None,
+        image6=None,
+        image7=None,
+        image8=None,
+        image9=None,
+        image10=None,
+    ):
+        """生成图像（NanoBanana2 10 图 API）"""
 
         # 获取实际使用的API密钥
         actual_api_key = self._get_api_key(api_key)
@@ -227,86 +280,89 @@ class BizyAirNanoBananaProNode:
         if missing_deps:
             raise Exception(f"缺少必要的依赖: {', '.join(missing_deps)}. 请安装这些依赖后再试。")
         
+        if not prompt or not prompt.strip():
+            raise Exception("请输入提示词")
+
+        if image is None:
+            raise Exception("NanoBanana2 需要至少一张参考图 (image)")
+
+        inputcount = max(1, min(int(inputcount), 10))
+
         try:
-            api_url = "https://api.bizyair.cn/w/v1/webapp/task/openapi/create"
-            print(f"BizyAir NanoBanana2 API request to: {api_url} (web_app_id: 47114)")
-            
-            # 准备请求头
+            print(
+                f"BizyAir NanoBanana2 API request to: {NANOBANANA2_API_URL} "
+                f"(web_app_id: {NANOBANANA2_WEB_APP_ID})"
+            )
+
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {actual_api_key}"
+                "Authorization": f"Bearer {actual_api_key}",
             }
-            
-            # 主图必须存在
-            if image is None:
-                raise Exception("NanoBanana2 需要至少一张主图 (image)")
-            
+
             add_log = lambda t, m: print(f"[BizyAirNanoBanana2][{t}] {m}")
-            
-            # 上传主图
-            primary_bytes, primary_ext = self._image_to_bytes(image)
-            if not primary_bytes or not primary_ext:
-                raise Exception("主图转换失败，请检查图像格式")
-            primary_url = upload_image_to_bizyair(
-                primary_bytes, actual_api_key,
-                add_log_fn=add_log,
-                file_name=f"nanobanana_primary.{primary_ext}"
-            )
-            
-            # 参考图节点（与 API 一致：37,39,46,48,52）
-            ref_node_keys = ["37:LoadImage.image", "39:LoadImage.image", "46:LoadImage.image", "48:LoadImage.image", "52:LoadImage.image"]
-            input_images = [image2, image3, image4, image5, image6]
-            
-            # 根据 inputcount 只使用前 N 张图（主图 + inputcount-1 张参考图）
-            max_refs = min(inputcount - 1, 5)
-            
-            # 构建 input_values（35:BizyAir_NanoBanana2.*，与 API 示例一致）
+
+            ref_images = [
+                image,
+                image2,
+                image3,
+                image4,
+                image5,
+                image6,
+                image7,
+                image8,
+                image9,
+                image10,
+            ]
+            ref_images = ref_images[:inputcount]
+
             input_values = {
-                "40:LoadImage.image": primary_url,
-                "35:BizyAir_NanoBanana2.prompt": prompt,
-                "35:BizyAir_NanoBanana2.aspect_ratio": aspect_ratio or "auto",
-                "35:BizyAir_NanoBanana2.resolution": resolution,
-                "35:BizyAir_NanoBanana2.inputcount": inputcount,
-                "35:BizyAir_NanoBanana2.mode": "official" if mode == "official" else "third-party"
+                f"{NANOBANANA2_NODE_PREFIX}.prompt": prompt,
+                f"{NANOBANANA2_NODE_PREFIX}.aspect_ratio": aspect_ratio,
+                f"{NANOBANANA2_NODE_PREFIX}.resolution": resolution,
+                f"{NANOBANANA2_NODE_PREFIX}.mode": "third-party",
             }
-            
-            # 上传参考图（最多 max_refs 张）
-            ref_count = 0
-            for idx in range(max_refs):
-                if idx >= len(input_images):
-                    break
-                img = input_images[idx]
-                if img is not None and idx < len(ref_node_keys):
-                    img_bytes, ext = self._image_to_bytes(img)
-                    if img_bytes and ext:
-                        try:
-                            ref_url = upload_image_to_bizyair(
-                                img_bytes, actual_api_key,
-                                add_log_fn=add_log,
-                                file_name=f"nanobanana_ref_{idx + 1}.{ext}"
-                            )
-                            input_values[ref_node_keys[idx]] = ref_url
-                            ref_count += 1
-                            print(f"Added ref image {idx + 1} (key: {ref_node_keys[idx]})")
-                        except Exception as up_err:
-                            print(f"Warning: Failed to upload ref image {idx + 1}: {up_err}")
-            
-            # 实际发送的图片数需与 inputcount 一致，若参考图不足则使用实际数量
-            actual_count = 1 + ref_count
-            if actual_count < inputcount:
-                print(f"Warning: inputcount={inputcount} but only {actual_count} images provided. Using actual count.")
-                input_values["35:BizyAir_NanoBanana2.inputcount"] = actual_count
-            
-            # 构建请求数据
+
+            uploaded_count = 0
+            for idx, current_image in enumerate(ref_images):
+                if current_image is None:
+                    continue
+
+                img_bytes, ext = self._image_to_bytes(current_image)
+                if not img_bytes or not ext:
+                    raise Exception(f"参考图 {idx + 1} 转换失败，请检查图像格式")
+
+                ref_url = upload_image_to_bizyair(
+                    img_bytes,
+                    actual_api_key,
+                    add_log_fn=add_log,
+                    file_name=f"nanobanana_ref_{idx + 1}.{ext}",
+                )
+                input_values[NANOBANANA2_IMAGE_NODE_KEYS[idx]] = ref_url
+                uploaded_count += 1
+                print(
+                    f"Added ref image {idx + 1} "
+                    f"(key: {NANOBANANA2_IMAGE_NODE_KEYS[idx]})"
+                )
+
+            if uploaded_count == 0:
+                raise Exception("未上传到任何参考图，请至少连接一张图像")
+
+            input_values[f"{NANOBANANA2_NODE_PREFIX}.inputcount"] = uploaded_count
+
             data = {
-                "web_app_id": 47114,  # NanoBanana2 6图，与主插件一致
+                "web_app_id": NANOBANANA2_WEB_APP_ID,
                 "suppress_preview_output": False,
-                "input_values": input_values
+                "input_values": input_values,
             }
-            
-            print(f"Request data: web_app_id={data['web_app_id']}, inputcount={input_values['35:BizyAir_NanoBanana2.inputcount']}, refs={ref_count}")
-            print(f"Prompt: {prompt[:100]}..., Aspect: {aspect_ratio}, Resolution: {resolution}, Mode: {mode}")
-            print(f"Input values keys: {list(input_values.keys())}")
+
+            print(
+                f"Request data: web_app_id={data['web_app_id']}, "
+                f"inputcount={uploaded_count}"
+            )
+            print(
+                f"Prompt: {prompt[:100]}..., Aspect: {aspect_ratio}, "
+                f"Resolution: {resolution}"
+            )
             # 打印请求数据（隐藏 OSS URL 详情）
             debug_data = data.copy()
             debug_input_values = {}
@@ -319,7 +375,7 @@ class BizyAirNanoBananaProNode:
             print(f"Request payload: {json.dumps(debug_data, indent=2, ensure_ascii=False)}")
             
             # 发送请求（增加超时时间到120秒）
-            response = requests.post(api_url, headers=headers, json=data, timeout=120)
+            response = requests.post(NANOBANANA2_API_URL, headers=headers, json=data, timeout=120)
             response.raise_for_status()
             
             result = response.json()
@@ -371,20 +427,22 @@ class BizyAirNanoBananaProNode:
             # 构建状态信息
             status_info = {
                 "status": "success",
-                "web_app_id": 47114,
+                "web_app_id": NANOBANANA2_WEB_APP_ID,
                 "prompt": prompt,
                 "aspect_ratio": aspect_ratio,
                 "resolution": resolution,
-                "inputcount": input_values["35:BizyAir_NanoBanana2.inputcount"],
-                "mode": mode,
+                "inputcount": uploaded_count,
                 "image_url": image_url,
                 "cost_time": result.get("cost_times", {}).get("total_cost_time", 0),
-                "request_id": result.get("request_id", "")
+                "request_id": result.get("request_id", ""),
             }
-            
+
             status_text = f"✅ NanoBanana2 生成成功\n"
             status_text += f"提示词: {prompt[:50]}...\n"
-            status_text += f"宽高比: {aspect_ratio}, 分辨率: {resolution}, inputcount: {status_info['inputcount']}, 模式: {mode}\n"
+            status_text += (
+                f"宽高比: {aspect_ratio}, 分辨率: {resolution}, "
+                f"参考图: {status_info['inputcount']}\n"
+            )
             status_text += f"耗时: {status_info['cost_time']}ms\n"
             status_text += f"请求ID: {status_info['request_id']}"
             

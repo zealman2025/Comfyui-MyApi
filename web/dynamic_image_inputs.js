@@ -3,12 +3,22 @@ import { app } from "../../scripts/app.js";
 const NODE_CONFIGS = {
     BizyAirGPTImage2I2INode: {
         countWidget: "inputcount",
-        maxCount: 4,
+        maxCount: 10,
         minCount: 1,
     },
     BizyAirNanoBananaProNode: {
         countWidget: "inputcount",
-        maxCount: 6,
+        maxCount: 10,
+        minCount: 1,
+    },
+    AutodlNanoBanana2I2INode: {
+        countWidget: "inputcount",
+        maxCount: 14,
+        minCount: 1,
+    },
+    AutodlGPTImage2I2INode: {
+        countWidget: "inputcount",
+        maxCount: 10,
         minCount: 1,
     },
 };

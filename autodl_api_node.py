@@ -43,6 +43,7 @@ AUTODL_MODELS = (
     "qwen3.6-plus",
     "Qwen3.5-397B-A17B",
     "Kimi-K2.5",
+    "Kimi-K2.6",
     "gpt-5.4-mini",
     "gpt-5.4-nano",
     "gpt-5.4",
