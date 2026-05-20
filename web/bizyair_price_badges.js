@@ -18,6 +18,13 @@ const BIZYAIR_NODE_PRICES = {
     BizyAirGPTImage2I2INode: {
         price: GPT_IMAGE2_PRICE,
     },
+    BizyAirNanoBanana2T2INode: {
+        getPrice(node) {
+            const resolution =
+                node.widgets?.find((w) => w.name === "resolution")?.value ?? "1K";
+            return NANOBANANA2_PRICES[resolution] ?? 200;
+        },
+    },
     BizyAirNanoBananaProNode: {
         getPrice(node) {
             const resolution =

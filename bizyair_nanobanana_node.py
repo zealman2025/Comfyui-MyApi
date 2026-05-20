@@ -37,8 +37,16 @@ except ImportError:
 
 
 NANOBANANA2_API_URL = "https://api.bizyair.cn/w/v1/webapp/task/openapi/create"
-NANOBANANA2_WEB_APP_ID = 47114
-NANOBANANA2_NODE_PREFIX = "35:BizyAir_NanoBanana2"
+
+NANOBANANA2_T2I_WEB_APP_ID = 54388
+NANOBANANA2_T2I_NODE_PREFIX = "59:BizyAir_NanoBanana2"
+
+NANOBANANA2_I2I_WEB_APP_ID = 47114
+NANOBANANA2_I2I_NODE_PREFIX = "35:BizyAir_NanoBanana2"
+
+# 兼容旧常量名
+NANOBANANA2_WEB_APP_ID = NANOBANANA2_I2I_WEB_APP_ID
+NANOBANANA2_NODE_PREFIX = NANOBANANA2_I2I_NODE_PREFIX
 
 NANOBANANA2_IMAGE_NODE_KEYS = [
     "40:LoadImage.image",
@@ -67,6 +75,212 @@ NANOBANANA2_ASPECT_RATIOS = [
 ]
 
 NANOBANANA2_RESOLUTIONS = ["1K", "2K", "4K"]
+
+
+def _nanobanana_get_api_key(input_api_key, log_prefix="BizyAirNanoBanana2"):
+    invalid_placeholders = [
+        "YOUR_API_KEY",
+        "你的apikey",
+        "your_api_key_here",
+        "请输入API密钥",
+        "请输入你的API密钥",
+    ]
+    if (
+        input_api_key
+        and input_api_key.strip()
+        and input_api_key.strip() not in invalid_placeholders
+    ):
+        print(f"[{log_prefix}] 使用节点中的 API 密钥")
+        return input_api_key.strip()
+    return ""
+
+
+def _nanobanana_check_dependencies():
+    missing_deps = []
+    if not HAS_PIL:
+        missing_deps.append("Pillow")
+    if not HAS_NUMPY:
+        missing_deps.append("numpy")
+    if not HAS_REQUESTS:
+        missing_deps.append("requests")
+    return missing_deps
+
+
+def _nanobanana_decode_image_from_url(image_url):
+    if not HAS_REQUESTS or not HAS_PIL or not HAS_NUMPY:
+        raise Exception("Missing required dependencies")
+
+    print(f"Downloading image from URL: {image_url}")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    response = requests.get(image_url, headers=headers, timeout=30)
+    response.raise_for_status()
+
+    image = Image.open(io.BytesIO(response.content))
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    image_np = np.array(image).astype(np.float32) / 255.0
+    image_tensor = image_np[np.newaxis, ...]
+    if HAS_TORCH:
+        image_tensor = torch.from_numpy(image_tensor)
+
+    print(f"Successfully converted image to ComfyUI format: {image_tensor.shape}")
+    return image_tensor
+
+
+def _nanobanana_extract_api_error(result):
+    error_message = result.get("status", "Unknown error")
+    outputs = result.get("outputs", [])
+    if outputs:
+        error_output = outputs[0]
+        error_msg = error_output.get("error_msg", "")
+        error_type = error_output.get("error_type", "")
+        if error_msg:
+            error_message = f"{error_message}: {error_msg}"
+        if error_type:
+            error_message = f"{error_message} (类型: {error_type})"
+
+    if error_message == result.get("status", "Unknown error"):
+        error_detail = result.get("error", {})
+        if isinstance(error_detail, dict):
+            error_msg = error_detail.get("message", error_detail.get("msg", ""))
+            if error_msg:
+                error_message = f"{error_message}: {error_msg}"
+    return error_message
+
+
+def _nanobanana_debug_payload(data, input_values):
+    debug_data = data.copy()
+    debug_input_values = {}
+    for key, value in input_values.items():
+        if isinstance(value, str) and (
+            "storage.bizyair.cn" in value or "aliyuncs.com" in value
+        ):
+            debug_input_values[key] = f"[OSS URL: {value[:60]}...]"
+        else:
+            debug_input_values[key] = value
+    debug_data["input_values"] = debug_input_values
+    return debug_data
+
+
+class BizyAirNanoBanana2T2INode:
+    """BizyAir NanoBanana2 文生图（web_app_id: 54388）"""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "api_key": ("STRING", {"default": "", "multiline": False}),
+                "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
+                "aspect_ratio": (NANOBANANA2_ASPECT_RATIOS, {"default": "16:9"}),
+                "resolution": (NANOBANANA2_RESOLUTIONS, {"default": "1K"}),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE", "STRING")
+    RETURN_NAMES = ("image", "string")
+    FUNCTION = "generate"
+    CATEGORY = "🍎MYAPI"
+
+    def generate(self, api_key, prompt, aspect_ratio, resolution):
+        log_prefix = "BizyAirNanoBanana2T2I"
+        actual_api_key = _nanobanana_get_api_key(api_key, log_prefix)
+        if not actual_api_key:
+            raise Exception("请在节点中填写 BizyAir API 密钥。请访问 https://bizyair.cn 获取。")
+
+        missing_deps = _nanobanana_check_dependencies()
+        if missing_deps:
+            raise Exception(
+                f"缺少必要的依赖: {', '.join(missing_deps)}. 请安装这些依赖后再试。"
+            )
+
+        if not prompt or not prompt.strip():
+            raise Exception("请输入文生图提示词")
+
+        try:
+            print(
+                f"[{log_prefix}] BizyAir NanoBanana2 T2I request to: "
+                f"{NANOBANANA2_API_URL} (web_app_id: {NANOBANANA2_T2I_WEB_APP_ID})"
+            )
+
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {actual_api_key}",
+            }
+
+            input_values = {
+                f"{NANOBANANA2_T2I_NODE_PREFIX}.prompt": prompt,
+                f"{NANOBANANA2_T2I_NODE_PREFIX}.aspect_ratio": aspect_ratio,
+                f"{NANOBANANA2_T2I_NODE_PREFIX}.resolution": resolution,
+                f"{NANOBANANA2_T2I_NODE_PREFIX}.mode": "third-party",
+            }
+
+            data = {
+                "web_app_id": NANOBANANA2_T2I_WEB_APP_ID,
+                "suppress_preview_output": False,
+                "input_values": input_values,
+            }
+
+            print(
+                f"[{log_prefix}] Prompt: {prompt[:100]}..., "
+                f"Aspect: {aspect_ratio}, Resolution: {resolution}"
+            )
+            print(
+                f"[{log_prefix}] Request payload: "
+                f"{json.dumps(_nanobanana_debug_payload(data, input_values), indent=2, ensure_ascii=False)}"
+            )
+
+            response = requests.post(
+                NANOBANANA2_API_URL, headers=headers, json=data, timeout=120
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            print(f"[{log_prefix}] API response received")
+            print(
+                f"[{log_prefix}] API response: "
+                f"{json.dumps(result, indent=2, ensure_ascii=False)}"
+            )
+
+            if result.get("status") != "Success":
+                error_message = _nanobanana_extract_api_error(result)
+                print(
+                    f"[{log_prefix}] API错误详情: "
+                    f"{json.dumps(result, indent=2, ensure_ascii=False)}"
+                )
+                raise Exception(f"API请求失败: {error_message}")
+
+            outputs = result.get("outputs", [])
+            if not outputs:
+                raise Exception("API响应中没有找到输出数据")
+
+            image_url = outputs[0].get("object_url")
+            if not image_url:
+                raise Exception("API响应中没有找到图像URL")
+
+            print(f"[{log_prefix}] Generated image URL: {image_url}")
+            output_image = _nanobanana_decode_image_from_url(image_url)
+
+            cost_time = result.get("cost_times", {}).get("total_cost_time", 0)
+            request_id = result.get("request_id", "")
+
+            status_text = (
+                f"✅ NanoBanana2 T2I 生成成功\n"
+                f"提示词: {prompt[:50]}...\n"
+                f"宽高比: {aspect_ratio}, 分辨率: {resolution}\n"
+                f"耗时: {cost_time}ms\n"
+                f"请求ID: {request_id}"
+            )
+            return (output_image, status_text)
+
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"网络请求错误: {str(e)}") from e
+        except Exception as e:
+            print(f"[{log_prefix}] {e}")
+            print(traceback.format_exc())
+            raise
 
 
 class BizyAirNanoBananaProNode:
@@ -461,9 +675,11 @@ class BizyAirNanoBananaProNode:
 
 # 节点映射
 NODE_CLASS_MAPPINGS = {
-    "BizyAirNanoBananaProNode": BizyAirNanoBananaProNode
+    "BizyAirNanoBanana2T2INode": BizyAirNanoBanana2T2INode,
+    "BizyAirNanoBananaProNode": BizyAirNanoBananaProNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "BizyAirNanoBananaProNode": "🌐BizyAir NanoBanana2"
+    "BizyAirNanoBanana2T2INode": "🌐BizyAir NanoBanana2 文生图",
+    "BizyAirNanoBananaProNode": "🌐BizyAir NanoBanana2 图生图",
 }

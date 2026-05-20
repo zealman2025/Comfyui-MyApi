@@ -4,7 +4,7 @@ import sys
 import hashlib
 
 # 插件版本号
-__version__ = "2.0.3"
+__version__ = "2.1.0"
 
 # 在启动时打印版本信息
 print(f"[Comfyui-MyApi] 插件版本: {__version__}")

@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.0.3-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
@@ -42,7 +42,8 @@
 
 | 节点 | 输入图片 | 主要参数 | 适用场景 |
 |------|---------|----------|----------|
-| 🌐 BizyAir NanoBanana2 | 1–10 张（动态） | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K）、`inputcount` | 多图融合 / 编辑 |
+| 🌐 BizyAir NanoBanana2 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本驱动图像生成 |
+| 🌐 BizyAir NanoBanana2 图生图 | 1–10 张（动态） | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K）、`inputcount` | 多图融合 / 编辑 |
 | 🌐 BizyAir GPT-IMAGE-2 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1k/2k/4k） | 纯文本驱动图像生成 |
 | 🌐 BizyAir GPT-IMAGE-2 图生图 | 1–10 张（动态） | `prompt`、`aspect_ratio`、`resolution`、`inputcount` | 多参考图图像合成 |
 
@@ -91,9 +92,10 @@
 
 | 节点 | 价格 |
 |------|------|
+| 🌐 BizyAir NanoBanana2 文生图 | **200** 金币 / 张（1K / 2K）；**250** 金币 / 张（4K） |
+| 🌐 BizyAir NanoBanana2 图生图 | **200** 金币 / 张（1K / 2K）；**250** 金币 / 张（4K） |
 | 🌐 BizyAir GPT-IMAGE-2 文生图 | **100** 金币 / 张（1k / 2k / 4k 同价） |
 | 🌐 BizyAir GPT-IMAGE-2 图生图 | **100** 金币 / 张（1k / 2k / 4k 同价） |
-| 🌐 BizyAir NanoBanana2 | **200** 金币 / 张（1K / 2K）；**250** 金币 / 张（4K） |
 
 充值与余额查询：[BizyAir 官网](https://bizyair.cn)
 
@@ -130,7 +132,7 @@
 
 | 节点 | 最大图片数 |
 |------|-----------|
-| 🌐 BizyAir NanoBanana2 | 10 |
+| 🌐 BizyAir NanoBanana2 图生图 | 10 |
 | 🌐 BizyAir GPT-IMAGE-2 图生图 | 10 |
 | 🍎 AutodL Nano Banana 2 图生图 | 14 |
 | 🍎 AutodL GPT-IMAGE-2 图生图 | 10 |
