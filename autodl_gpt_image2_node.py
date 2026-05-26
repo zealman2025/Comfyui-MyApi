@@ -6,6 +6,7 @@ AutodL GPT-IMAGE-2 — OpenAI Responses API（经 AutoDL 中转）
 - UI：resolution + aspect_ratio 映射为官方 size；quality 与官方一致
 """
 
+import asyncio
 import random
 import traceback
 
@@ -64,7 +65,10 @@ class AutodlGPTImage2T2INode:
         key_seed = random.random() if int(seed) == 0 else int(seed)
         return (key_seed, prompt or "", quality, resolution, aspect_ratio)
 
-    def generate(self, api_key, prompt, quality, resolution, aspect_ratio, seed):
+    async def generate(self, **kwargs):
+        return await asyncio.to_thread(self._generate_sync, **kwargs)
+
+    def _generate_sync(self, api_key, prompt, quality, resolution, aspect_ratio, seed):
         _ = seed
         missing = check_image_deps(require_torch=True)
         if missing:
@@ -172,7 +176,10 @@ class AutodlGPTImage2I2INode:
             tuple(x is not None for x in refs),
         )
 
-    def generate(
+    async def generate(self, **kwargs):
+        return await asyncio.to_thread(self._generate_sync, **kwargs)
+
+    def _generate_sync(
         self,
         api_key,
         prompt,

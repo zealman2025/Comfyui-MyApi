@@ -1,3 +1,4 @@
+import asyncio
 import json
 import traceback
 
@@ -103,7 +104,11 @@ class DoubaoSeedTranslationNode:
             missing_deps.append("requests")
         return missing_deps
 
-    def translate(self, api_key, model, text, source_language, target_language):
+    async def translate(self, **kwargs):
+        """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
+        return await asyncio.to_thread(self._translate_sync, **kwargs)
+
+    def _translate_sync(self, api_key, model, text, source_language, target_language):
         """翻译函数"""
         missing_deps = self._check_dependencies()
         if missing_deps:

@@ -1,37 +1,55 @@
 import { app } from "../../scripts/app.js";
 
-// BizyAir 官方价目表（金币/张）
-// GPT-Image-2 文生图/图生图：1K/2K/4K 同价 100
 const GPT_IMAGE2_PRICE = 100;
 
-// NanoBanana 2（第三方）
 const NANOBANANA2_PRICES = {
     "1K": 200,
     "2K": 200,
     "4K": 250,
 };
 
+const NANOBANANA2_OFFICIAL_RATES = {
+    "0.5K": 550,
+    "1K": 550,
+    "2K": 850,
+    "4K": 1100,
+};
+
+const GPT_IMAGE2_OFFICIAL_RATES = {
+    "1K": { low: 161, medium: 378, high: 1120 },
+    "2K": { low: 182, medium: 630, high: 2149 },
+    "4K": { low: 224, medium: 966, high: 3486 },
+};
+
+function nanobananaThirdPartyPrice(node) {
+    const resolution =
+        node.widgets?.find((w) => w.name === "resolution")?.value ?? "1K";
+    return NANOBANANA2_PRICES[resolution] ?? 200;
+}
+
+function nanobananaOfficialPrice(node) {
+    const resolution =
+        node.widgets?.find((w) => w.name === "resolution")?.value ?? "1K";
+    return NANOBANANA2_OFFICIAL_RATES[resolution] ?? 550;
+}
+
+function gptImage2OfficialPrice(node) {
+    const resolution =
+        node.widgets?.find((w) => w.name === "resolution")?.value ?? "2K";
+    const quality =
+        node.widgets?.find((w) => w.name === "quality")?.value ?? "medium";
+    return GPT_IMAGE2_OFFICIAL_RATES[resolution]?.[quality] ?? 630;
+}
+
 const BIZYAIR_NODE_PRICES = {
-    BizyAirGPTImage2T2INode: {
-        price: GPT_IMAGE2_PRICE,
-    },
-    BizyAirGPTImage2I2INode: {
-        price: GPT_IMAGE2_PRICE,
-    },
-    BizyAirNanoBanana2T2INode: {
-        getPrice(node) {
-            const resolution =
-                node.widgets?.find((w) => w.name === "resolution")?.value ?? "1K";
-            return NANOBANANA2_PRICES[resolution] ?? 200;
-        },
-    },
-    BizyAirNanoBananaProNode: {
-        getPrice(node) {
-            const resolution =
-                node.widgets?.find((w) => w.name === "resolution")?.value ?? "1K";
-            return NANOBANANA2_PRICES[resolution] ?? 200;
-        },
-    },
+    BizyAirNanoBanana2ThirdPartyT2INode: { getPrice: nanobananaThirdPartyPrice },
+    BizyAirNanoBanana2ThirdPartyI2INode: { getPrice: nanobananaThirdPartyPrice },
+    BizyAirNanoBanana2OfficialT2INode: { getPrice: nanobananaOfficialPrice },
+    BizyAirNanoBanana2OfficialI2INode: { getPrice: nanobananaOfficialPrice },
+    BizyAirGPTImage2ThirdPartyT2INode: { price: GPT_IMAGE2_PRICE },
+    BizyAirGPTImage2ThirdPartyI2INode: { price: GPT_IMAGE2_PRICE },
+    BizyAirGPTImage2OfficialT2INode: { getPrice: gptImage2OfficialPrice },
+    BizyAirGPTImage2OfficialI2INode: { getPrice: gptImage2OfficialPrice },
 };
 
 class SimpleBadge {
@@ -131,6 +149,7 @@ function attachPriceBadge(node, config) {
     });
 
     watchWidget(node, "resolution");
+    watchWidget(node, "quality");
     watchWidget(node, "inputcount");
 }
 

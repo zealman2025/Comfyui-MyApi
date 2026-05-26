@@ -1,11 +1,10 @@
 """
 AutodL Nano Banana 2 — 官方 Gemini generateContent API（经 AutoDL 中转）
 
-- 文生图：仅 prompt
-- 图生图：prompt + 最多 14 张参考图
-- 参数：aspect_ratio、image_size（0.5K/1K/2K/4K），与 Google 官方 imageConfig 一致
+- 文生图 / 图生图：Gemini `v1beta` `generateContent`（`autodl_common.call_gemini_image`）
 """
 
+import asyncio
 import random
 import traceback
 
@@ -73,7 +72,10 @@ class AutodlNanoBanana2T2INode:
         key_seed = random.random() if int(seed) == 0 else int(seed)
         return (key_seed, prompt or "", aspect_ratio, image_size)
 
-    def generate(self, api_key, prompt, aspect_ratio, image_size, seed):
+    async def generate(self, **kwargs):
+        return await asyncio.to_thread(self._generate_sync, **kwargs)
+
+    def _generate_sync(self, api_key, prompt, aspect_ratio, image_size, seed):
         _ = seed
         missing = check_image_deps(require_torch=True)
         if missing:
@@ -168,7 +170,10 @@ class AutodlNanoBanana2I2INode:
         refs = [image, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12, image13, image14]
         return (key_seed, prompt or "", aspect_ratio, image_size, int(inputcount), tuple(x is not None for x in refs))
 
-    def generate(
+    async def generate(self, **kwargs):
+        return await asyncio.to_thread(self._generate_sync, **kwargs)
+
+    def _generate_sync(
         self,
         api_key,
         prompt,

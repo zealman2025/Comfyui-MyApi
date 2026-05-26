@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import io
@@ -481,7 +482,11 @@ class DoubaoSeedream5Node:
             traceback.print_exc()
             raise
 
-    def generate(self, api_key, prompt, size, custom_width, custom_height, model, seed, watermark, stream, sequential_image_generation,
+    async def generate(self, **kwargs):
+        """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
+        return await asyncio.to_thread(self._generate_sync, **kwargs)
+
+    def _generate_sync(self, api_key, prompt, size, custom_width, custom_height, model, seed, watermark, stream, sequential_image_generation,
                  image=None, image2=None, image3=None, image4=None, image5=None,
                  image6=None, image7=None, image8=None, image9=None, image10=None):
         """主生成函数"""

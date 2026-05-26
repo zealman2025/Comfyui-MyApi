@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
@@ -15,6 +15,7 @@
 - 💰 **节点价格标签**：BizyAir 节点显示蓝色金币价目，AutoDL 节点显示绿色人民币 Token 价目（右上角 Badge）
 - 📤 **SSH 文件上传**：将工作流中的图片、音频、文本、模型文件或本地目录上传到 SSH 服务器
 - 📦 **自动安装依赖**：首次加载时自动按 `requirements.txt` 安装缺失依赖（可通过环境变量关闭）
+- ⚡ **异步并发执行**：所有 API 节点（BizyAir / AutoDL / 豆包 / DeepSeek）全部 `async def`，多个无依赖节点可并行请求，BizyAir ModelZoo 节点更使用 `aiohttp` 实现真正的异步 IO
 
 ## 节点一览
 
@@ -25,10 +26,19 @@
 | 节点 | 服务 | 图像输入 | 主要参数 | 适用场景 |
 |------|------|---------|----------|----------|
 | 🥟 豆包MMM | 火山引擎 Doubao | 最多 5 张 | `model`、`max_tokens`、`reasoning_effort`（中文显示）、`seed` | 多模态理解、思维链推理、图文对比分析 |
-| 🔎 DeepSeek V4 | DeepSeek | 0 张 | `model`（`deepseek-v4-pro` / `deepseek-v4-flash`）、`enable_thinking`、`reasoning_effort`、`system_prompt`、`max_tokens`、`stream`；输出 `string` + `reasoning` | 长文本理解、代码生成、思考模式推理 |
-| 🍎 AutodL API | AutoDL 中转 | 最多 5 张 | `model`、`system_prompt`、`user_prompt`、`seed` | 通过 AutoDL 中转访问的多模态聊天 |
+| 🔎 DeepSeek V4 | DeepSeek | 0 张 | `model`、`enable_thinking`、`reasoning_effort`、`system_prompt`、`max_tokens`、`stream` | 长文本、代码、思考模式 |
+| 🍎 AutodL API | AutoDL | 最多 5 张 | `model`、`system_prompt`、`user_prompt`、`seed` | 多模态对话、图文理解 |
 
-**AutodL API 可选模型：** `qwen3.6-plus`、`Qwen3.5-397B-A17B`、`Kimi-K2.5`、`Kimi-K2.6`、`gpt-5.4-nano`、`gpt-5.4-mini`、`gpt-5.4`、`gpt-5.5`、`gemini-3.1-pro-preview`
+**豆包 MMM 节点内可选模型：**
+
+| 模型 ID | 定位 |
+|---------|------|
+| `doubao-seed-2-0-pro-260215` | 旗舰全能，复杂推理与 Agent |
+| `doubao-seed-2-0-lite-260428` | 均衡型，质量与速度兼顾 |
+| `doubao-seed-2-0-mini-260428` | 低时延高并发，支持多档思考深度 |
+| `doubao-seed-1-8-251228` | 上一代通用 Agent，256K 上下文 |
+
+**AutodL API 节点内可选模型：** qwen3.6-plus、Qwen3.5-397B-A17B、Kimi-K2.5、Kimi-K2.6、gpt-5.4-nano、gpt-5.4-mini、gpt-5.4、gpt-5.5、gemini-3.1-pro-preview
 
 ### 翻译
 
@@ -38,23 +48,27 @@
 
 ### 图像生成 / 图像编辑
 
-#### BizyAir 系列（平台封装，需充值金币）
+#### BizyAir 系列（需充值金币，ModelZoo OpenAPI）
 
 | 节点 | 输入图片 | 主要参数 | 适用场景 |
 |------|---------|----------|----------|
-| 🌐 BizyAir NanoBanana2 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本驱动图像生成 |
-| 🌐 BizyAir NanoBanana2 图生图 | 1–10 张（动态） | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K）、`inputcount` | 多图融合 / 编辑 |
-| 🌐 BizyAir GPT-IMAGE-2 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1k/2k/4k） | 纯文本驱动图像生成 |
-| 🌐 BizyAir GPT-IMAGE-2 图生图 | 1–10 张（动态） | `prompt`、`aspect_ratio`、`resolution`、`inputcount` | 多参考图图像合成 |
+| 🌐 BizyAir NanoBanana2 第三方渠道版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本生成 |
+| 🌐 BizyAir NanoBanana2 第三方渠道版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图编辑（OSS 上传） |
+| 🌐 BizyAir NanoBanana2 官方版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（0.5K/1K/2K/4K）、`seed`、`web_search` | 官方线路文生图 |
+| 🌐 BizyAir NanoBanana2 官方版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 官方线路图生图，支持联网搜索 |
+| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本生成 |
+| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图合成（4K+1:1 自动降为 2K） |
+| 🌐 BizyAir GPT-IMAGE-2 官方版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`、`quality` | 官方线路，UI 比例映射为 width/height |
+| 🌐 BizyAir GPT-IMAGE-2 官方版 图生图 | 1–16 张（动态） | 同上 + `inputcount` | 官方线路图生图，最多 16 参考图 |
 
-#### AutoDL 系列（官方协议中转）
+#### AutoDL 系列（需 AutoDL 大模型 Token）
 
-| 节点 | 协议 | 输入图片 | 主要参数 | 适用场景 |
-|------|------|---------|----------|----------|
-| 🍎 AutodL Nano Banana 2 文生图 | Gemini `generateContent` | 0 张 | `prompt`、`aspect_ratio`、`image_size`（0.5K/1K/2K/4K）、`seed` | 官方 Gemini 文生图 |
-| 🍎 AutodL Nano Banana 2 图生图 | Gemini `generateContent` | 1–14 张（动态） | 同上 + `inputcount` | 官方 Gemini 多参考图编辑 |
-| 🍎 AutodL GPT-IMAGE-2 文生图 | OpenAI Responses | 0 张 | `prompt`、`quality`、`resolution`（1K/2K/4K/auto）、`aspect_ratio`、`seed` | 官方 Responses 文生图 |
-| 🍎 AutodL GPT-IMAGE-2 图生图 | OpenAI Responses | 1–10 张（动态） | 同上 + `inputcount` | 官方 Responses 多参考图编辑 |
+| 节点 | 输入图片 | 主要参数 | 适用场景 |
+|------|---------|----------|----------|
+| 🍎 AutodL Nano Banana 2 文生图 | 0 张 | `prompt`、`aspect_ratio`、`image_size`（0.5K/1K/2K/4K）、`seed` | 纯文本生成图像 |
+| 🍎 AutodL Nano Banana 2 图生图 | 1–14 张（动态） | 同上 + `inputcount` | 多参考图融合 / 编辑 |
+| 🍎 AutodL GPT-IMAGE-2 文生图 | 0 张 | `prompt`、`quality`、`resolution`（1K/2K/4K/auto）、`aspect_ratio`、`seed` | 纯文本生成图像 |
+| 🍎 AutodL GPT-IMAGE-2 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图图像合成 |
 
 #### 豆包图像
 
@@ -62,10 +76,12 @@
 |------|------|---------|----------|
 | 🥟 豆包 SEEDREAM 4.5 | 火山引擎 Doubao | `prompt`、`size` / 自定义宽高、`seed`、`watermark`、`stream` | 自定义尺寸高质量图像生成 |
 
-**宽高比说明**
+**图像节点支持的宽高比**
 
-- BizyAir / AutoDL NanoBanana2 / AutoDL GPT-IMAGE-2 均支持：`1:1` `2:3` `3:2` `3:4` `4:3` `4:5` `5:4` `9:16` `16:9` `21:9`
-- AutoDL GPT-IMAGE-2 在节点内选择 `resolution` + `aspect_ratio`，后台自动映射为官方 `size`（如 1K + 16:9 → `1824x1024`）；选 `auto` 则传官方 `size: auto`
+文生图 / 图生图类节点（BizyAir NanoBanana2、GPT-IMAGE-2，以及 AutoDL 对应节点）均可在节点上选择宽高比，例如：`1:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9` 等（以节点下拉选项为准）。
+
+- **分辨率**：在节点的 `resolution` 或 `image_size` 中选择 `0.5K` / `1K` / `2K` / `4K`（AutoDL GPT-IMAGE-2 另有 `auto`）
+- **图生图**：连接 `image`、`image2` … 参考图，用 `inputcount` 控制端口数量（见下文「动态图片输入」）
 
 ### 文本处理
 
@@ -86,31 +102,77 @@
 
 ## 价格参考
 
-节点右上角会显示实时价格标签（前端 JS 扩展）。**实际扣费以各平台账单为准**，下表为当前插件内置的参考价目。
+节点右上角会显示参考价格（ComfyUI 界面标签）。**实际扣费以各平台账单为准**。
 
 ### BizyAir（蓝色标签：金币 / 次）
 
 | 节点 | 价格 |
 |------|------|
-| 🌐 BizyAir NanoBanana2 文生图 | **200** 金币 / 张（1K / 2K）；**250** 金币 / 张（4K） |
-| 🌐 BizyAir NanoBanana2 图生图 | **200** 金币 / 张（1K / 2K）；**250** 金币 / 张（4K） |
-| 🌐 BizyAir GPT-IMAGE-2 文生图 | **100** 金币 / 张（1k / 2k / 4k 同价） |
-| 🌐 BizyAir GPT-IMAGE-2 图生图 | **100** 金币 / 张（1k / 2k / 4k 同价） |
+| 🌐 BizyAir NanoBanana2 第三方渠道版 文生图 / 图生图 | **200** 金币 / 次（1K / 2K）；**250** 金币 / 次（4K） |
+| 🌐 BizyAir NanoBanana2 官方版 文生图 / 图生图 | **550** 金币 / 次（0.5K / 1K）；**850** 金币 / 次（2K）；**1100** 金币 / 次（4K） |
+| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 文生图 / 图生图 | **100** 金币 / 次 |
+| 🌐 BizyAir GPT-IMAGE-2 官方版 文生图 / 图生图 | 见下表（依 `resolution` + `quality` 分档） |
+
+**BizyAir GPT-IMAGE-2 官方版分档价目（金币 / 次）：**
+
+| resolution | low | medium | high |
+|------------|-----|--------|------|
+| 1K | 161 | 378 | 1120 |
+| 2K | 182 | 630 | 2149 |
+| 4K | 224 | 966 | 3486 |
 
 充值与余额查询：[BizyAir 官网](https://bizyair.cn)
 
+### 火山方舟 / 豆包（人民币）
+
+计费单位以 [火山方舟模型价格](https://www.volcengine.com/docs/82379/1544106) 为准。以下为**在线推理、输入 ≤32K** 档参考价（输入更长时分档加价）。
+
+#### 豆包 MMM（随节点内 `model` 切换）
+
+| 模型 ID | 输入 | 输出 | 缓存命中 |
+|---------|------|------|----------|
+| `doubao-seed-2-0-pro-260215` | ¥3.2 / M | ¥16 / M | ¥0.64 / M |
+| `doubao-seed-2-0-lite-260428` | ¥0.6 / M | ¥3.6 / M | ¥0.12 / M |
+| `doubao-seed-2-0-mini-260428` | ¥0.2 / M | ¥2 / M | ¥0.04 / M |
+| `doubao-seed-1-8-251228` | ¥0.8 / M | ¥2 / M | ¥0.16 / M |
+
+#### 豆包翻译
+
+| 节点 | 输入 | 输出 |
+|------|------|------|
+| 🥟 豆包翻译模型 | ¥1.2 / 百万字符 | ¥3.6 / 百万字符 |
+
+#### 豆包图像
+
+| 节点 | 模型 | 价格 |
+|------|------|------|
+| 🥟 豆包 SEEDREAM 4.5 | `doubao-seedream-4-5-251128` | **¥0.25 / 张**（按生成图片数计费，prompt 不计费） |
+
+密钥与账单：[火山方舟控制台](https://console.volcengine.com/ark)
+
+### DeepSeek（人民币 / 百万 Token）
+
+价格来源：[DeepSeek 官方价目](https://api-docs.deepseek.com/zh-cn/quick_start/pricing)
+
+| 模型 | 输入（缓存命中） | 输入（未命中） | 输出 |
+|------|----------------|--------------|------|
+| `deepseek-v4-flash` | ¥0.02 / M | ¥1 / M | ¥2 / M |
+| `deepseek-v4-pro` | ¥0.025 / M | ¥3 / M | ¥6 / M |
+
+`deepseek-v4-pro` 当前为限时优惠价（截至 2026-05-31），之后恢复为 ¥0.1 / ¥12 / ¥24。
+
 ### AutoDL（绿色标签：人民币 / 百万 Token）
 
-计费单位：**¥ / M Token**（M = 1,000,000 Token）。图像类与聊天类均按输入 / 输出 Token 分别计费。节点右上角标签与下表一致。
+计费单位：**¥ / M Token**（M = 一百万 Token）。图像按生成计费，聊天按输入 / 输出分别计费。
 
 #### 图像节点
 
-| 节点 | 计费模型 | 输入 | 输出 |
-|------|---------|------|------|
-| 🍎 AutodL Nano Banana 2 文生图 / 图生图 | `nano-banana-2` | ¥2.625 / M | ¥315.000 / M |
-| 🍎 AutodL GPT-IMAGE-2 文生图 / 图生图 | `gpt-image-2` | ¥28.000 / M | ¥168.000 / M |
+| 节点 | 输入 | 输出 |
+|------|------|------|
+| 🍎 AutodL Nano Banana 2 文生图 / 图生图 | ¥2.625 / M | ¥315.000 / M |
+| 🍎 AutodL GPT-IMAGE-2 文生图 / 图生图 | ¥28.000 / M | ¥168.000 / M |
 
-#### AutodL API 聊天模型（随 `model` 切换）
+#### AutodL API 聊天（随节点内 `model` 切换）
 
 | 模型 | 输入 | 输出 |
 |------|------|------|
@@ -128,12 +190,13 @@
 
 ## 动态图片输入
 
-以下节点接入了前端 JS 扩展 `web/dynamic_image_inputs.js`：
+以下图生图节点支持按数量增减参考图端口：
 
 | 节点 | 最大图片数 |
 |------|-----------|
-| 🌐 BizyAir NanoBanana2 图生图 | 10 |
-| 🌐 BizyAir GPT-IMAGE-2 图生图 | 10 |
+| 🌐 BizyAir NanoBanana2 第三方/官方版 图生图 | 10 |
+| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 图生图 | 10 |
+| 🌐 BizyAir GPT-IMAGE-2 官方版 图生图 | 16 |
 | 🍎 AutodL Nano Banana 2 图生图 | 14 |
 | 🍎 AutodL GPT-IMAGE-2 图生图 | 10 |
 
@@ -170,7 +233,7 @@
 - `bytes` / `bytearray`：保存为 BIN 后上传
 - 普通字典：优先识别音频 / 文本，否则保存为 JSON 后上传
 
-上传结果输出 `upload_info` 字符串（JSON），包含 `success`、`local_path`、`remote_path`、`file_url`、`file_size`、`error` 等字段。
+上传完成后，节点会输出 `upload_info` 文本，其中包含是否成功、本地路径、远端路径等简要信息。
 
 ## API 密钥
 
@@ -228,7 +291,7 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 ### 图像输入
 
 - 推荐使用适中分辨率，节点会在上传前自动压缩 / 缩放，避免超过服务端体积限制
-- BizyAir 系列节点会先通过 OSS 三步上传，再发起生成请求
+- BizyAir 图生图需先上传参考图，网络较慢时请耐心等待
 - 多图节点请按 `image` / `image2` / `image3` … 顺序连接，与 `inputcount` 对齐
 
 ### 常用参数
@@ -238,7 +301,7 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 | `seed` | 固定随机性，便于复现（AutoDL 图像节点） |
 | `aspect_ratio` | 图像宽高比 |
 | `resolution` / `image_size` | 分辨率档位（各节点命名略有不同） |
-| `quality` | GPT-IMAGE-2 渲染质量：`low` / `medium` / `high` / `auto` |
+| `quality` | GPT-IMAGE-2 画质：`low` / `medium` / `high` / `auto` |
 | `inputcount` | 动态图像端口数量 |
 | `reasoning_effort` | 豆包 MMM 思考深度：不思考 / 轻量 / 均衡 / 深度 |
 | `max_tokens` | 单次输出最大 Token 数 |
@@ -246,10 +309,10 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 ## 注意事项
 
 - 各服务都有调用频率与额度限制，请遵守对应服务条款
-- BizyAir 节点需在平台充值金币后使用；AutoDL 按 Token 计费，需保证账户余额充足
+- BizyAir 节点需在平台充值金币后使用；AutoDL / 火山方舟 / DeepSeek 按 Token 或按张计费，请保证账户余额充足
 - 海外 / 中转服务需要稳定的网络连接
 - 所有节点的密钥仅在本地节点中使用，不会上传到第三方
-- 旧版 `🍎AutodL Nano Banana 2`（单节点）已拆分为文生图 / 图生图两个节点，旧工作流需手动替换
+- 旧版单一节点「🍎AutodL Nano Banana 2」已拆成「文生图」「图生图」两个节点，旧工作流请改连新节点
 
 ## 许可证
 

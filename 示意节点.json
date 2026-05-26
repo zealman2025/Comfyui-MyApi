@@ -1,0 +1,928 @@
+{
+  "id": "b9e68f22-d1bf-4821-ab9a-97b5ed849c3b",
+  "revision": 0,
+  "last_node_id": 28,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 7,
+      "type": "AutodlNanoBanana2I2INode",
+      "pos": [
+        549.6120684695036,
+        -3578.952150244142
+      ],
+      "size": [
+        400,
+        516
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "0aca40afd3e7f91c8668726ad75da5882ddef0b8",
+        "Node name for S&R": "AutodlNanoBanana2I2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        2,
+        0,
+        "randomize",
+        null
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 10,
+      "type": "AutodlNanoBanana2T2INode",
+      "pos": [
+        125.73765700495608,
+        -3578.952150244142
+      ],
+      "size": [
+        400,
+        228
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "AutodlNanoBanana2T2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        0,
+        "randomize"
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 11,
+      "type": "AutodlGPTImage2T2INode",
+      "pos": [
+        123.89059774756407,
+        -2807.0651122326517
+      ],
+      "size": [
+        400,
+        252
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "AutodlGPTImage2T2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "medium",
+        "1K",
+        "16:9",
+        0,
+        "randomize"
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 12,
+      "type": "AutodlGPTImage2I2INode",
+      "pos": [
+        553.9685217225162,
+        -2807.0651122326517
+      ],
+      "size": [
+        400,
+        460
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "AutodlGPTImage2I2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "medium",
+        "1K",
+        "16:9",
+        1,
+        0,
+        "randomize",
+        null
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 17,
+      "type": "BizyAirNanoBanana2ThirdPartyT2INode",
+      "pos": [
+        -1945.7494033907803,
+        -3589.067648509356
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirNanoBanana2ThirdPartyT2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 18,
+      "type": "BizyAirNanoBanana2ThirdPartyI2INode",
+      "pos": [
+        -1519.6151134121303,
+        -3589.067648509356
+      ],
+      "size": [
+        400,
+        388
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirNanoBanana2ThirdPartyI2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        1,
+        null
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 19,
+      "type": "BizyAirNanoBanana2OfficialT2INode",
+      "pos": [
+        -904.7820807238985,
+        -3573.442508370863
+      ],
+      "size": [
+        400,
+        252
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirNanoBanana2OfficialT2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        0,
+        "randomize",
+        false
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 20,
+      "type": "BizyAirNanoBanana2OfficialI2INode",
+      "pos": [
+        -482.7332021736761,
+        -3573.442508370863
+      ],
+      "size": [
+        400,
+        460
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirNanoBanana2OfficialI2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        0,
+        "randomize",
+        false,
+        1,
+        null
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 21,
+      "type": "BizyAirGPTImage2ThirdPartyT2INode",
+      "pos": [
+        -1937.3115216456843,
+        -2817.1806104978655
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirGPTImage2ThirdPartyT2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 22,
+      "type": "BizyAirGPTImage2ThirdPartyI2INode",
+      "pos": [
+        -1511.6423581853942,
+        -2817.1806104978655
+      ],
+      "size": [
+        400,
+        388
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirGPTImage2ThirdPartyI2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        1,
+        null
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 23,
+      "type": "BizyAirGPTImage2OfficialT2INode",
+      "pos": [
+        -896.3395865791292,
+        -2801.5554703593725
+      ],
+      "size": [
+        400,
+        204
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 4,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirGPTImage2OfficialT2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        "medium"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 24,
+      "type": "BizyAirGPTImage2OfficialI2INode",
+      "pos": [
+        -473.46870854809777,
+        -2801.5554703593725
+      ],
+      "size": [
+        400,
+        532
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "BizyAirGPTImage2OfficialI2INode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        }
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "16:9",
+        "1K",
+        "medium",
+        1,
+        null
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 25,
+      "type": "DoubaoNode",
+      "pos": [
+        -1023.4270513610447,
+        -1939.1586173866353
+      ],
+      "size": [
+        400,
+        312
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_4",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_5",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "DoubaoNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "doubao-seed-2-0-pro-260215",
+        "图片主要讲了什么?",
+        4096,
+        0,
+        "randomize",
+        "均衡思考（medium）"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "DoubaoSeedTranslationNode",
+      "pos": [
+        -575.0297085095517,
+        -1934.199881113171
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "DoubaoSeedTranslationNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "doubao-seed-translation-250915",
+        "若夫淫雨霏霏，连月不开，阴风怒号，浊浪排空",
+        "zh",
+        "en"
+      ]
+    },
+    {
+      "id": 28,
+      "type": "AutodlApiNode",
+      "pos": [
+        -102.27295468210357,
+        -1938.974325864768
+      ],
+      "size": [
+        400,
+        318
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_4",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "image_5",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "7333dc9308056456d58d8df535955765fa5b7c3b",
+        "Node name for S&R": "AutodlApiNode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "run_env": "LOCAL_ONLY"
+      },
+      "widgets_values": [
+        "",
+        "qwen3.6-plus",
+        "",
+        "",
+        0,
+        "randomize"
+      ]
+    }
+  ],
+  "links": [],
+  "groups": [
+    {
+      "id": 1,
+      "title": "便宜，性价比最高，一张图几分钱，API注册 https://bizyair.cn/",
+      "bounding": [
+        -1991.3754610168112,
+        -3812.2443584182174,
+        966.7194863738566,
+        1603.6664162283532
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "价格贵，官方直连-仅作为其他不能用的备选，API注册 https://bizyair.cn/",
+      "bounding": [
+        -972.0903346352061,
+        -3811.4026650691817,
+        966.7194863738566,
+        1603.6664162283532
+      ],
+      "color": "#88A",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "价格贵，官方直连-仅作为其他不能用的备选，API注册https://www.codewithgpu.com/large-model/tokens",
+      "bounding": [
+        50.86650650342269,
+        -3807.7295704869975,
+        966.7194863738566,
+        1603.6664162283532
+      ],
+      "color": "#8AA",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "29元月卡=135000金币  换算100金币约等于 0.02 元",
+      "bounding": [
+        -1990.5613641710202,
+        -3900.2277809478433,
+        967.8950974121819,
+        80
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "29元月卡=135000金币  换算100金币约等于 0.02 元",
+      "bounding": [
+        -971.9995170517903,
+        -3897.719007925382,
+        964.1319378784899,
+        80
+      ],
+      "color": "#88A",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "反推/大模型/常用API/国内直连",
+      "bounding": [
+        -1265.4493447792,
+        -2092.0819897935908,
+        1684.4444444443952,
+        551.1111111110959
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 0.1,
+      "offset": [
+        9127.156542416318,
+        7307.036598310193
+      ]
+    },
+    "frontendVersion": "1.42.15",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

@@ -36,6 +36,7 @@ except ImportError:
 
 AUTODL_OPENAI_BASE = "https://www.autodl.art/api/v1"
 AUTODL_GEMINI_BASE = "https://www.autodl.art/api/v1/gemini"
+AUTODL_GEMINI_GENERATE_URL = AUTODL_GEMINI_BASE.rstrip("/") + "/v1beta/models/{model}:generateContent"
 AUTODL_RESPONSES_URL = f"{AUTODL_OPENAI_BASE.rstrip('/')}/responses"
 
 REQUEST_PROXIES = {"http": None, "https": None}
@@ -139,6 +140,41 @@ def extract_responses_image_b64(response_data: dict) -> str:
         if result:
             return result
     raise ValueError("Responses 响应中未找到 image_generation_call 结果")
+
+
+def post_gemini_json(url: str, api_key: str, payload: dict) -> dict:
+    """AutoDL Gemini 中转：使用 x-goog-api-key（与 google-genai SDK 一致）。"""
+    if not HAS_REQUESTS:
+        raise RuntimeError("缺少 requests")
+    headers = {
+        "x-goog-api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+        timeout=REQUEST_TIMEOUT,
+        proxies=REQUEST_PROXIES,
+    )
+    try:
+        data = response.json()
+    except Exception as exc:
+        raise RuntimeError(f"HTTP {response.status_code} 非 JSON: {response.text[:500]}") from exc
+
+    if response.status_code == 401:
+        raise RuntimeError(
+            "401 密钥无效或未授权。请到 https://www.autodl.art/large-model/tokens 检查令牌。"
+        )
+    if not response.ok:
+        err = data.get("error") if isinstance(data, dict) else None
+        if isinstance(err, dict):
+            msg = err.get("message", str(err))
+        else:
+            msg = response.text[:500]
+        raise RuntimeError(f"HTTP {response.status_code} - {msg}")
+    return data
 
 
 def post_json(url: str, api_key: str, payload: dict) -> dict:
@@ -319,6 +355,22 @@ def map_gpt_image2_size(resolution: str, aspect_ratio: str) -> str:
     return size
 
 
+def extract_gemini_response_image_bytes(response_data: dict) -> bytes:
+    candidates = response_data.get("candidates") or []
+    for candidate in candidates:
+        content = candidate.get("content") or {}
+        for part in content.get("parts") or []:
+            inline = part.get("inlineData") or part.get("inline_data")
+            if not inline:
+                continue
+            data = inline.get("data")
+            if data:
+                if isinstance(data, str):
+                    return base64.b64decode(data)
+                return data
+    raise ValueError("Gemini 响应中未找到图像数据")
+
+
 def extract_genai_image_bytes(response) -> bytes:
     candidates = getattr(response, "candidates", None) or []
     for candidate in candidates:
@@ -353,46 +405,51 @@ def call_gemini_image(
     image_size: str,
     reference_images=None,
 ):
-    if not HAS_GOOGLE_GENAI:
-        raise RuntimeError("缺少 google-genai，请执行: pip install google-genai")
-
-    client = genai.Client(
-        api_key=api_key,
-        http_options={"base_url": AUTODL_GEMINI_BASE},
-    )
+    """经 AutoDL Gemini 中转：v1beta generateContent，支持 aspectRatio + imageSize。"""
+    if not HAS_REQUESTS:
+        raise RuntimeError("缺少 requests")
 
     parts = []
     for image in reference_images or []:
         if image is None:
             continue
         png_bytes = tensor_to_png_bytes(image)
-        parts.append(genai_types.Part.from_bytes(data=png_bytes, mime_type="image/png"))
+        parts.append(
+            {
+                "inlineData": {
+                    "mimeType": "image/png",
+                    "data": base64.b64encode(png_bytes).decode("utf-8"),
+                }
+            }
+        )
 
     if prompt and str(prompt).strip():
-        parts.append(str(prompt).strip())
+        parts.append({"text": str(prompt).strip()})
 
     if not parts:
         raise ValueError("至少需要 prompt 或参考图")
 
-    config = genai_types.GenerateContentConfig(
-        response_modalities=["TEXT", "IMAGE"],
-        image_config=genai_types.ImageConfig(
-            aspect_ratio=aspect_ratio,
-            image_size=map_gemini_image_size(image_size),
-        ),
-    )
+    url = AUTODL_GEMINI_GENERATE_URL.format(model=model)
+    payload = {
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {
+            "responseModalities": ["TEXT", "IMAGE"],
+            "imageConfig": {
+                "aspectRatio": aspect_ratio,
+                "imageSize": map_gemini_image_size(image_size),
+            },
+        },
+    }
 
-    response = client.models.generate_content(
-        model=model,
-        contents=parts,
-        config=config,
-    )
-    image_bytes = extract_genai_image_bytes(response)
+    data = post_gemini_json(url, api_key, payload)
+    image_bytes = extract_gemini_response_image_bytes(data)
     info = {
         "model": model,
         "aspect_ratio": aspect_ratio,
         "image_size": image_size,
         "reference_count": len([x for x in (reference_images or []) if x is not None]),
+        "protocol": "gemini v1beta generateContent",
+        "endpoint": url,
     }
     return bytes_to_image_tensor(image_bytes), info
 

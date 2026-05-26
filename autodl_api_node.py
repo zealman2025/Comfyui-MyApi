@@ -1,3 +1,4 @@
+import asyncio
 import json
 import io
 import base64
@@ -331,7 +332,11 @@ class AutodlApiNode:
             return t
         return str(response)
 
-    def process(
+    async def process(self, **kwargs):
+        """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
+        return await asyncio.to_thread(self._process_sync, **kwargs)
+
+    def _process_sync(
         self,
         api_key,
         model,

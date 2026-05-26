@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import folder_paths
@@ -41,6 +42,9 @@ except ImportError:
 
 DOUBAO_MODELS = {
     "doubao-seed-2-0-pro-260215": "doubao-seed-2-0-pro-260215",
+    "doubao-seed-2-0-lite-260428": "doubao-seed-2-0-lite-260428",
+    "doubao-seed-2-0-mini-260428": "doubao-seed-2-0-mini-260428",
+    "doubao-seed-1-8-251228": "doubao-seed-1-8-251228",
 }
 
 REASONING_EFFORT_OPTIONS = {
@@ -280,7 +284,11 @@ class DoubaoNode:
             
         return f"{timestamp}-{random_str}"
 
-    def process(self, api_key, model, prompt, max_tokens=4096, seed=0, reasoning_effort="均衡思考（medium）", image=None, image_2=None, image_3=None, image_4=None, image_5=None):
+    async def process(self, **kwargs):
+        """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
+        return await asyncio.to_thread(self._process_sync, **kwargs)
+
+    def _process_sync(self, api_key, model, prompt, max_tokens=4096, seed=0, reasoning_effort="均衡思考（medium）", image=None, image_2=None, image_3=None, image_4=None, image_5=None):
         """主处理函数"""
         # 应用种子值
         if seed == 0:  # 0表示使用当前种子
