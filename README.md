@@ -1,21 +1,21 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
+一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL、Geeknow 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
 
 ## 主要特性
 
 - 🔑 **节点内填写密钥**：每个节点的 `api_key` 输入框中独立填写，不读取本地配置文件
 - 🖼️ **多模态支持**：覆盖文本、图像理解、图像生成、图像编辑、翻译等场景
-- 🎯 **多服务集成**：豆包、DeepSeek、BizyAir、AutoDL 等主流 AI 服务一站式接入
+- 🎯 **多服务集成**：豆包、DeepSeek、BizyAir、AutoDL、Geeknow 等主流 AI 服务一站式接入
 - 🧩 **统一输出规范**：所有字符串输出端口统一命名为 `string`，便于上下游连接
-- 🪄 **动态图片输入**：BizyAir / AutoDL 图生图节点提供 `inputcount` 与「更新图片输入」按钮，动态增减图像端口
+- 🪄 **动态图片输入**：BizyAir / AutoDL / Geeknow 图生图节点提供 `inputcount` 与「更新图片输入」按钮，动态增减图像端口
 - 💰 **节点价格标签**：BizyAir 节点显示蓝色金币价目，AutoDL 节点显示绿色人民币 Token 价目（右上角 Badge）
 - 📤 **SSH 文件上传**：将工作流中的图片、音频、文本、模型文件或本地目录上传到 SSH 服务器
 - 📦 **自动安装依赖**：首次加载时自动按 `requirements.txt` 安装缺失依赖（可通过环境变量关闭）
-- ⚡ **异步并发执行**：所有 API 节点（BizyAir / AutoDL / 豆包 / DeepSeek）全部 `async def`，多个无依赖节点可并行请求，BizyAir ModelZoo 节点更使用 `aiohttp` 实现真正的异步 IO
+- ⚡ **异步并发执行**：所有 API 节点（BizyAir / AutoDL / Geeknow / 豆包 / DeepSeek）全部 `async def`，多个无依赖节点可并行请求，BizyAir ModelZoo 节点更使用 `aiohttp` 实现真正的异步 IO
 
 ## 节点一览
 
@@ -70,6 +70,51 @@
 | 🍎 AutodL GPT-IMAGE-2 文生图 | 0 张 | `prompt`、`quality`、`resolution`（1K/2K/4K/auto）、`aspect_ratio`、`seed` | 纯文本生成图像 |
 | 🍎 AutodL GPT-IMAGE-2 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图图像合成 |
 
+#### Geeknow 系列（需 Geeknow API 密钥）
+
+| 节点 | 输入图片 | 主要参数 | 适用场景 |
+|------|---------|----------|----------|
+| 🍆 Geeknow GPT-IMAGE-2 文生图 | 0 张 | `line`、`model`、`quality`、`resolution`、`aspect_ratio`、`seed` | OpenAI Images 兼容文生图 |
+| 🍆 Geeknow GPT-IMAGE-2 图生图 | 1–10 张（动态） | 同上 + `reference_mode`、`inputcount` | 多参考图合成 / 编辑 |
+| 🍆 Geeknow Gemini 图像 文生图 | 0 张 | `line`、`model`、`aspect_ratio`、`image_size`（1K/2K）、`seed` | Gemini generateContent 文生图 |
+| 🍆 Geeknow Gemini 图像 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图融合 / 编辑 |
+
+**Geeknow GPT-IMAGE-2 节点内可选模型：**
+
+| 模型 ID | 说明 |
+|---------|------|
+| `gpt-image-2` | 基础档，最高 1K 分辨率 |
+| `gpt-image-2-pro` | 高级档，支持 2K / 4K 分辨率 |
+
+**Geeknow Gemini 图像节点内可选模型：**
+
+| 模型 ID | 说明 |
+|---------|------|
+| `gemini-3-pro-image-preview` | Pro 档，支持 1K / 2K |
+| `gemini-2.5-flash-image-preview` | Flash 档，2K 实际回落为 1K |
+| `gemini-3.1-flash-image-preview` | Flash 档，2K 实际回落为 1K |
+
+**Geeknow API 线路（`line` 参数）：**
+
+| 选项 | 说明 |
+|------|------|
+| `https://geeknow.ai/v1 (cn2线路)` | cn2 线路（默认） |
+| `https://api.geeknow.ai/v1 (cdn线路推荐国内用户)` | CDN 线路，推荐国内用户 |
+
+**Geeknow 图生图参考图传递方式（仅 GPT-IMAGE-2 图生图）：**
+
+| `reference_mode` | 说明 |
+|------------------|------|
+| `base64 内嵌` | 参考图以 Base64 直接写入请求 JSON（默认） |
+| `上传获取URL` | 先调用 Geeknow 预签名上传接口获取公网 URL，再传入 `image` 字段 |
+
+**Geeknow API 文档：**
+
+- GPT-IMAGE-2：<https://docs.geeknow.top/api-reference/images/gpt-image-2/generation>
+- GPT-IMAGE-2 Pro：<https://docs.geeknow.top/api-reference/images/gpt-image-2-pro/generation>
+- Gemini 图像：<https://docs.geeknow.top/api-reference/images/gemini-image/generation>
+- 图片上传：<https://docs.geeknow.top/api-reference/uploads/image-upload>
+
 #### 豆包图像
 
 | 节点 | 服务 | 主要参数 | 适用场景 |
@@ -78,7 +123,7 @@
 
 **图像节点支持的宽高比**
 
-文生图 / 图生图类节点（BizyAir NanoBanana2、GPT-IMAGE-2，以及 AutoDL 对应节点）均可在节点上选择宽高比，例如：`1:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9` 等（以节点下拉选项为准）。
+文生图 / 图生图类节点（BizyAir NanoBanana2、GPT-IMAGE-2，AutoDL / Geeknow 对应节点）均可在节点上选择宽高比，例如：`1:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9` 等（以节点下拉选项为准）。
 
 - **分辨率**：在节点的 `resolution` 或 `image_size` 中选择 `0.5K` / `1K` / `2K` / `4K`（AutoDL GPT-IMAGE-2 另有 `auto`）
 - **图生图**：连接 `image`、`image2` … 参考图，用 `inputcount` 控制端口数量（见下文「动态图片输入」）
@@ -188,6 +233,20 @@
 
 令牌管理：[AutoDL 大模型 Token](https://autodl.art/large-model/tokens)
 
+### Geeknow（紫色标签：人民币 / 次）
+
+按生成次数计费，随节点内 `model` 切换。节点右上角绿色标签实时显示当前模型单价（格式 `GK ¥x.xx/次`）。
+
+| 模型 | 节点 | 价格 |
+|------|------|------|
+| `gpt-image-2` | 🍆 Geeknow GPT-IMAGE-2 文生图 / 图生图 | **¥0.04 / 次** |
+| `gpt-image-2-pro` | 🍆 Geeknow GPT-IMAGE-2 文生图 / 图生图 | **¥0.08 / 次** |
+| `gemini-3-pro-image-preview` | 🍆 Geeknow Gemini 图像 文生图 / 图生图 | **¥0.22 / 次** |
+| `gemini-3.1-flash-image-preview` | 🍆 Geeknow Gemini 图像 文生图 / 图生图 | **¥0.15 / 次** |
+| `gemini-2.5-flash-image-preview` | 🍆 Geeknow Gemini 图像 文生图 / 图生图 | **¥0.06 / 次** |
+
+密钥与余额查询：[Geeknow 官网](https://geeknow.ai)
+
 ## 动态图片输入
 
 以下图生图节点支持按数量增减参考图端口：
@@ -199,6 +258,8 @@
 | 🌐 BizyAir GPT-IMAGE-2 官方版 图生图 | 16 |
 | 🍎 AutodL Nano Banana 2 图生图 | 14 |
 | 🍎 AutodL GPT-IMAGE-2 图生图 | 10 |
+| 🍆 Geeknow GPT-IMAGE-2 图生图 | 10 |
+| 🍆 Geeknow Gemini 图像 图生图 | 10 |
 
 交互方式：
 
@@ -245,6 +306,7 @@
 | 🌐 BizyAir | <https://bizyair.cn> |
 | 🔎 DeepSeek | <https://platform.deepseek.com/> |
 | 🍎 AutoDL | <https://autodl.art/large-model/tokens> |
+| 🍆 Geeknow | <https://geeknow.ai>（密钥在平台控制台获取） |
 
 ## 安装
 
@@ -292,6 +354,9 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 
 - 推荐使用适中分辨率，节点会在上传前自动压缩 / 缩放，避免超过服务端体积限制
 - BizyAir 图生图需先上传参考图，网络较慢时请耐心等待
+- Geeknow 节点请选择正确的 `line` 线路；国内用户建议优先使用 CDN 线路
+- Geeknow GPT-IMAGE-2 图生图若参考图较大，可切换 `reference_mode` 为「上传获取URL」以减小请求体积
+- Geeknow Gemini 图生图参考图通过 `inlineData` Base64 内嵌传递，节点会自动压缩参考图
 - 多图节点请按 `image` / `image2` / `image3` … 顺序连接，与 `inputcount` 对齐
 
 ### 常用参数
@@ -301,7 +366,9 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 | `seed` | 固定随机性，便于复现（AutoDL 图像节点） |
 | `aspect_ratio` | 图像宽高比 |
 | `resolution` / `image_size` | 分辨率档位（各节点命名略有不同） |
+| `line` | Geeknow API 线路：cn2 线路 / CDN 线路 |
 | `quality` | GPT-IMAGE-2 画质：`low` / `medium` / `high` / `auto` |
+| `reference_mode` | Geeknow GPT-IMAGE-2 图生图参考图传递：`base64 内嵌` / `上传获取URL` |
 | `inputcount` | 动态图像端口数量 |
 | `reasoning_effort` | 豆包 MMM 思考深度：不思考 / 轻量 / 均衡 / 深度 |
 | `max_tokens` | 单次输出最大 Token 数 |
@@ -309,7 +376,7 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 ## 注意事项
 
 - 各服务都有调用频率与额度限制，请遵守对应服务条款
-- BizyAir 节点需在平台充值金币后使用；AutoDL / 火山方舟 / DeepSeek 按 Token 或按张计费，请保证账户余额充足
+- BizyAir 节点需在平台充值金币后使用；AutoDL / Geeknow / 火山方舟 / DeepSeek 按 Token 或按张计费，请保证账户余额充足
 - 海外 / 中转服务需要稳定的网络连接
 - 所有节点的密钥仅在本地节点中使用，不会上传到第三方
 - 旧版单一节点「🍎AutodL Nano Banana 2」已拆成「文生图」「图生图」两个节点，旧工作流请改连新节点
