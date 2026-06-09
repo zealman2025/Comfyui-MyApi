@@ -31,6 +31,16 @@ const NODE_CONFIGS = {
         maxCount: 10,
         minCount: 1,
     },
+    GeeknowGPTImage2I2INode: {
+        countWidget: "inputcount",
+        maxCount: 10,
+        minCount: 1,
+    },
+    GeeknowGeminiImageI2INode: {
+        countWidget: "inputcount",
+        maxCount: 10,
+        minCount: 1,
+    },
 };
 
 const SSH_CONFIGS = {

@@ -1,7 +1,7 @@
 {
   "id": "b9e68f22-d1bf-4821-ab9a-97b5ed849c3b",
   "revision": 0,
-  "last_node_id": 28,
+  "last_node_id": 36,
   "last_link_id": 0,
   "nodes": [
     {
@@ -16,8 +16,8 @@
         516
       ],
       "flags": {},
-      "order": 11,
-      "mode": 4,
+      "order": 0,
+      "mode": 0,
       "inputs": [
         {
           "name": "image",
@@ -80,8 +80,8 @@
         228
       ],
       "flags": {},
-      "order": 3,
-      "mode": 4,
+      "order": 1,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -129,8 +129,8 @@
         252
       ],
       "flags": {},
-      "order": 9,
-      "mode": 4,
+      "order": 2,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -179,8 +179,8 @@
         460
       ],
       "flags": {},
-      "order": 7,
-      "mode": 4,
+      "order": 3,
+      "mode": 0,
       "inputs": [
         {
           "name": "image",
@@ -238,7 +238,7 @@
         200
       ],
       "flags": {},
-      "order": 0,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -284,7 +284,7 @@
         388
       ],
       "flags": {},
-      "order": 8,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
@@ -339,8 +339,8 @@
         252
       ],
       "flags": {},
-      "order": 2,
-      "mode": 4,
+      "order": 6,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -388,8 +388,8 @@
         460
       ],
       "flags": {},
-      "order": 10,
-      "mode": 4,
+      "order": 7,
+      "mode": 0,
       "inputs": [
         {
           "name": "image",
@@ -446,7 +446,7 @@
         200
       ],
       "flags": {},
-      "order": 1,
+      "order": 8,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -492,7 +492,7 @@
         388
       ],
       "flags": {},
-      "order": 4,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -547,8 +547,8 @@
         204
       ],
       "flags": {},
-      "order": 5,
-      "mode": 4,
+      "order": 10,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -594,8 +594,8 @@
         532
       ],
       "flags": {},
-      "order": 6,
-      "mode": 4,
+      "order": 11,
+      "mode": 0,
       "inputs": [
         {
           "name": "image",
@@ -825,6 +825,223 @@
         0,
         "randomize"
       ]
+    },
+    {
+      "id": 33,
+      "type": "GeeknowGPTImage2T2INode",
+      "pos": [
+        -2925.7804147977145,
+        -3665.8266973345117
+      ],
+      "size": [
+        400,
+        300
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "fe0d7153603ca212232efc020e354eb75524df2e",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "GeeknowGPTImage2T2INode"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "https://geeknow.ai/v1 (cn2线路)",
+        "gpt-image-2",
+        "auto",
+        "1K",
+        "16:9",
+        0,
+        "randomize"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 34,
+      "type": "GeeknowGPTImage2I2INode",
+      "pos": [
+        -2476.1334400246787,
+        -3672.3670169675756
+      ],
+      "size": [
+        400,
+        532
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "fe0d7153603ca212232efc020e354eb75524df2e",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "GeeknowGPTImage2I2INode"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "https://geeknow.ai/v1 (cn2线路)",
+        "gpt-image-2",
+        "auto",
+        "1K",
+        "16:9",
+        "base64 内嵌",
+        1,
+        0,
+        "randomize",
+        null
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 35,
+      "type": "GeeknowGeminiImageT2INode",
+      "pos": [
+        -2912.6997755315892,
+        -2812.3149852198803
+      ],
+      "size": [
+        400,
+        276
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "fe0d7153603ca212232efc020e354eb75524df2e",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "GeeknowGeminiImageT2INode"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "https://geeknow.ai/v1 (cn2线路)",
+        "gemini-3-pro-image-preview",
+        "16:9",
+        "1K",
+        0,
+        "randomize"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 36,
+      "type": "GeeknowGeminiImageI2INode",
+      "pos": [
+        -2471.2282002998827,
+        -2820.4903847612086
+      ],
+      "size": [
+        400,
+        484
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "string",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zealman2025/Comfyui-MyApi",
+        "ver": "fe0d7153603ca212232efc020e354eb75524df2e",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "GeeknowGeminiImageI2INode"
+      },
+      "widgets_values": [
+        "",
+        "输入提示词",
+        "https://geeknow.ai/v1 (cn2线路)",
+        "gemini-3-pro-image-preview",
+        "16:9",
+        "1K",
+        1,
+        0,
+        "randomize",
+        null
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
     }
   ],
   "links": [],
@@ -839,7 +1056,6 @@
         1603.6664162283532
       ],
       "color": "#3f789e",
-      "font_size": 24,
       "flags": {}
     },
     {
@@ -852,7 +1068,6 @@
         1603.6664162283532
       ],
       "color": "#88A",
-      "font_size": 24,
       "flags": {}
     },
     {
@@ -865,7 +1080,6 @@
         1603.6664162283532
       ],
       "color": "#8AA",
-      "font_size": 24,
       "flags": {}
     },
     {
@@ -878,7 +1092,6 @@
         80
       ],
       "color": "#3f789e",
-      "font_size": 24,
       "flags": {}
     },
     {
@@ -891,7 +1104,6 @@
         80
       ],
       "color": "#88A",
-      "font_size": 24,
       "flags": {}
     },
     {
@@ -904,7 +1116,18 @@
         551.1111111110959
       ],
       "color": "#3f789e",
-      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 7,
+      "title": "字字动画常用，API注册https://www.geeknow.top/",
+      "bounding": [
+        -2982.8381632765495,
+        -3811.379875688403,
+        966.7194863738566,
+        1603.6664162283532
+      ],
+      "color": "#8AA",
       "flags": {}
     }
   ],
@@ -912,13 +1135,13 @@
   "extra": {
     "ue_links": [],
     "ds": {
-      "scale": 0.1,
+      "scale": 0.3797498335832419,
       "offset": [
-        9127.156542416318,
-        7307.036598310193
+        3818.5629967109385,
+        4410.04132608852
       ]
     },
-    "frontendVersion": "1.42.15",
+    "frontendVersion": "1.44.19",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
