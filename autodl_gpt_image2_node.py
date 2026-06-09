@@ -1,9 +1,13 @@
 """
-AutodL GPT-IMAGE-2 — OpenAI Responses API（经 AutoDL 中转）
+AutodL GPT-IMAGE-2 — OpenAI Image API（经 AutoDL 中转，与 OpenAI / ComfyUI 内置一致）
 
-- 文生图：responses + image_generation tool (action=generate)
-- 图生图：responses + input_image + image_generation tool (action=edit)
-- UI：resolution + aspect_ratio 映射为官方 size；quality 与官方一致
+端点:
+  文生图: https://www.autodl.art/api/v1/images/generations  (application/json)
+  图生图: https://www.autodl.art/api/v1/images/edits        (multipart/form-data)
+
+- model 直接为 gpt-image-2，无需 orchestrator（编排）主模型
+- UI：resolution + aspect_ratio 映射官方 size；quality 与官方一致
+- 图生图：参考图作为文件 multipart 上传（单图 image / 多图 image[]）
 """
 
 import asyncio
@@ -15,7 +19,8 @@ try:
         GPT_IMAGE2_ASPECT_RATIOS,
         GPT_IMAGE2_RESOLUTIONS,
         blank_image,
-        call_responses_image,
+        call_images_edit,
+        call_images_generation,
         check_image_deps,
         get_api_key,
         map_gpt_image2_size,
@@ -26,7 +31,8 @@ except ImportError:
         GPT_IMAGE2_ASPECT_RATIOS,
         GPT_IMAGE2_RESOLUTIONS,
         blank_image,
-        call_responses_image,
+        call_images_edit,
+        call_images_generation,
         check_image_deps,
         get_api_key,
         map_gpt_image2_size,
@@ -34,13 +40,12 @@ except ImportError:
     )
 
 GPT_IMAGE2_MODEL = "gpt-image-2"
-GPT_IMAGE2_ORCHESTRATOR = "gpt-5.4"
 
 GPT_IMAGE2_QUALITIES = ["low", "medium", "high", "auto"]
 
 
 class AutodlGPTImage2T2INode:
-    """AutodL GPT-IMAGE-2 文生图（Responses API）"""
+    """AutodL GPT-IMAGE-2 文生图（Image API /images/generations）"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -83,25 +88,22 @@ class AutodlGPTImage2T2INode:
 
         try:
             size = map_gpt_image2_size(resolution, aspect_ratio)
-            image, raw = call_responses_image(
+            image, raw = call_images_generation(
                 key,
                 str(prompt).strip(),
-                orchestrator_model=GPT_IMAGE2_ORCHESTRATOR,
                 image_model=GPT_IMAGE2_MODEL,
                 quality=quality,
                 size=size,
-                action="generate",
+                n=1,
             )
             return image, status_json(
                 mode="文生图",
-                protocol="responses",
+                protocol="images/generations",
                 model=GPT_IMAGE2_MODEL,
-                orchestrator=GPT_IMAGE2_ORCHESTRATOR,
                 quality=quality,
                 resolution=resolution,
                 aspect_ratio=aspect_ratio,
                 size=size,
-                request_id=raw.get("request_id"),
             )
         except Exception as e:
             print(f"[AutodL GPT-IMAGE-2 T2I] {e}")
@@ -110,7 +112,7 @@ class AutodlGPTImage2T2INode:
 
 
 class AutodlGPTImage2I2INode:
-    """AutodL GPT-IMAGE-2 图生图（Responses API，多参考图）"""
+    """AutodL GPT-IMAGE-2 图生图（Image API /images/edits，多参考图）"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -232,27 +234,24 @@ class AutodlGPTImage2I2INode:
 
         try:
             size = map_gpt_image2_size(resolution, aspect_ratio)
-            image_out, raw = call_responses_image(
+            image_out, raw = call_images_edit(
                 key,
                 str(prompt).strip(),
-                orchestrator_model=GPT_IMAGE2_ORCHESTRATOR,
                 image_model=GPT_IMAGE2_MODEL,
                 quality=quality,
                 size=size,
-                action="edit",
                 reference_images=ref_images,
+                n=1,
             )
             return image_out, status_json(
                 mode="图生图",
-                protocol="responses",
+                protocol="images/edits",
                 model=GPT_IMAGE2_MODEL,
-                orchestrator=GPT_IMAGE2_ORCHESTRATOR,
                 quality=quality,
                 resolution=resolution,
                 aspect_ratio=aspect_ratio,
                 size=size,
                 inputcount=len(ref_images),
-                request_id=raw.get("request_id"),
             )
         except Exception as e:
             print(f"[AutodL GPT-IMAGE-2 I2I] {e}")
