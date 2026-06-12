@@ -184,9 +184,15 @@ def missing_api_key_message(provider: str) -> str:
 
 def resolve_api_key(provider: str, input_api_key: str, use_node_api_key: bool) -> str:
     """
-    use_node_api_key=False（默认）：使用系统设置中的 Key。
     use_node_api_key=True：使用节点输入框中的 Key。
+    use_node_api_key=False（默认）：使用系统设置中的 Key；
+        若系统设置为空但节点输入框已填（多见于旧工作流升级），
+        则自动回退使用节点输入框中的 Key，保证旧工作流无需手动改动即可继续运行。
     """
+    node_key = clean_input_api_key(input_api_key)
     if use_node_api_key:
-        return clean_input_api_key(input_api_key)
-    return api_key_store.get(provider)
+        return node_key
+    system_key = api_key_store.get(provider)
+    if system_key:
+        return system_key
+    return node_key

@@ -29,8 +29,12 @@ app.registerExtension({
                     wv.length === this.widgets.length - 1 &&
                     typeof wv[TOGGLE_INDEX] !== "boolean"
                 ) {
-                    // 旧工作流：补回开关默认值，避免后续 widget 错位
-                    wv.splice(TOGGLE_INDEX, 0, false);
+                    // 旧工作流：补回开关，避免后续 widget 错位。
+                    // 若旧节点已在 api_key(index 0) 填写过密钥，则开关设为 true（使用输入框），
+                    // 保留原有行为，用户无需任何改动；否则默认 false（使用系统设置）。
+                    const hadKey =
+                        typeof wv[0] === "string" && wv[0].trim() !== "";
+                    wv.splice(TOGGLE_INDEX, 0, hadKey);
                 }
             } catch (_) {
                 /* ignore */
