@@ -1,11 +1,9 @@
 import asyncio
 import traceback
 
-try:
-    from openai import OpenAI
-    HAS_OPENAI = True
-except ImportError:
-    HAS_OPENAI = False
+import importlib.util as _importlib_util
+
+HAS_OPENAI = _importlib_util.find_spec("openai") is not None
 
 
 DEEPSEEK_V4_MODELS = {
@@ -127,6 +125,8 @@ class DeepSeekV4Node:
             return ("Error: 请在节点中填写有效的 DeepSeek API 密钥。", "")
 
         try:
+            from openai import OpenAI
+
             client = OpenAI(api_key=actual_key, base_url="https://api.deepseek.com")
 
             messages = []

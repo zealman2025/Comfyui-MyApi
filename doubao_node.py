@@ -28,11 +28,9 @@ try:
 except ImportError:
     HAS_TORCH = False
 
-try:
-    from openai import OpenAI
-    HAS_OPENAI = True
-except ImportError:
-    HAS_OPENAI = False
+import importlib.util as _importlib_util
+
+HAS_OPENAI = _importlib_util.find_spec("openai") is not None
 
 try:
     import requests

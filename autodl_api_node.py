@@ -29,13 +29,11 @@ try:
 except ImportError:
     HAS_REQUESTS = False
 
-try:
-    from google import genai
-    from google.genai import types as genai_types
-    HAS_GOOGLE_GENAI = True
-except ImportError:
-    HAS_GOOGLE_GENAI = False
-    genai_types = None
+import importlib.util as _importlib_util
+
+HAS_GOOGLE_GENAI = _importlib_util.find_spec("google.genai") is not None
+genai = None
+genai_types = None
 
 AUTODL_OPENAI_BASE = "https://www.autodl.art/api/v1"
 AUTODL_GEMINI_BASE = "https://www.autodl.art/api/v1/gemini"
@@ -310,6 +308,9 @@ class AutodlApiNode:
     def _call_gemini(self, api_key, system_prompt, user_prompt, image_slots):
         if not HAS_GOOGLE_GENAI:
             return "Error: 未安装 google-genai，请执行: pip install google-genai"
+
+        from google import genai
+        from google.genai import types as genai_types
 
         client = genai.Client(
             api_key=api_key,
