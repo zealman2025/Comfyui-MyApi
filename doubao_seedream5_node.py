@@ -36,31 +36,27 @@ DOUBAO_SEEDREAM5_MODELS = {
     "doubao-seedream-4-5-251128": "豆包 SEEDREAM 4.5",
 }
 
+try:
+    from .myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+except ImportError:
+    from myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+
+
 class DoubaoSeedream5Node:
     """豆包 SEEDREAM 4.5 图像生成节点"""
     
     def __init__(self):
         self.current_seed = 21
-
-    def _get_api_key(self, input_api_key):
-        """仅从节点输入读取 API 密钥。"""
-        invalid_placeholders = [
-            "YOUR_API_KEY",
-            "你的apikey",
-            "your_api_key_here",
-            "请输入API密钥",
-            "请输入你的API密钥",
-            "",
-        ]
-
-        if (
-            input_api_key
-            and input_api_key.strip()
-            and input_api_key.strip() not in invalid_placeholders
-        ):
-            print("[DoubaoSeedream5] 使用节点中的 API 密钥")
-            return input_api_key.strip()
-        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -74,6 +70,7 @@ class DoubaoSeedream5Node:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "一只可爱的小猫咪，坐在花园里，阳光明媚"}),
                 "size": (size_options, {"default": "2K"}),
                 "custom_width": ("INT", {"default": 2560, "min": 1024, "max": 4096, "step": 16}),
@@ -486,9 +483,30 @@ class DoubaoSeedream5Node:
         """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
         return await asyncio.to_thread(self._generate_sync, **kwargs)
 
-    def _generate_sync(self, api_key, prompt, size, custom_width, custom_height, model, seed, watermark, stream, sequential_image_generation,
-                 image=None, image2=None, image3=None, image4=None, image5=None,
-                 image6=None, image7=None, image8=None, image9=None, image10=None):
+    def _generate_sync(
+        self,
+        api_key,
+        use_node_api_key,
+        prompt,
+        size,
+        custom_width,
+        custom_height,
+        model,
+        seed,
+        watermark,
+        stream,
+        sequential_image_generation,
+        image=None,
+        image2=None,
+        image3=None,
+        image4=None,
+        image5=None,
+        image6=None,
+        image7=None,
+        image8=None,
+        image9=None,
+        image10=None,
+    ):
         """主生成函数"""
         # 检查依赖
         missing_deps = self._check_dependencies()
@@ -530,9 +548,9 @@ class DoubaoSeedream5Node:
                 print(f"参考图数量: {len(input_images)}")
 
             # 获取实际使用的API密钥
-            actual_api_key = self._get_api_key(api_key)
+            actual_api_key = resolve_api_key(PROVIDER_DOUBAO, api_key, use_node_api_key)
             if not actual_api_key:
-                raise Exception("请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。")
+                raise Exception(missing_api_key_message(PROVIDER_DOUBAO))
 
             # 构建API请求
             url = "https://ark.cn-beijing.volces.com/api/v3/images/generations"

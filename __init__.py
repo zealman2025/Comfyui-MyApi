@@ -4,7 +4,7 @@ import sys
 import hashlib
 
 # 插件版本号
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 # 在启动时打印版本信息
 print(f"[Comfyui-MyApi] 插件版本: {__version__}")
@@ -55,6 +55,9 @@ def _ensure_requirements_installed():
 
 
 _ensure_requirements_installed()
+
+# 注册全局 API Key 设置接口
+from . import myapi_server  # noqa: F401
 
 from .bizyair_nanobanana_node import NODE_CLASS_MAPPINGS as NANOBANANA_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as NANOBANANA_NODE_DISPLAY_NAME_MAPPINGS
 from .bizyair_gpt_image2_node import NODE_CLASS_MAPPINGS as GPT_IMAGE2_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as GPT_IMAGE2_NODE_DISPLAY_NAME_MAPPINGS

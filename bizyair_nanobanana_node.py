@@ -9,6 +9,12 @@ from .bizyair_common import (
     normalize_aspect_ratio,
     validate_prompt_length,
 )
+from .myapi_keys import (
+    PROVIDER_BIZYAIR,
+    missing_api_key_message,
+    resolve_api_key,
+    USE_NODE_API_KEY_INPUT,
+)
 
 B2_BASE_T2I = "bza-image-b2-base/text-to-image"
 B2_BASE_I2I = "bza-image-b2-base/image-to-image"
@@ -18,10 +24,11 @@ B2_OFFICIAL_I2I = "bza-image-b2-official/image-to-image"
 B2_I2I_MAX_IMAGES = 10
 
 
-def _get_clean_api_key(api_key: str) -> str:
-    invalid = {"", "YOUR_API_KEY", "你的apikey", "your_api_key_here", "请输入API密钥", "请输入你的API密钥"}
-    key = (api_key or "").strip()
-    return key if key and key not in invalid else ""
+def _require_bizyair_key(api_key: str, use_node_api_key: bool) -> str:
+    key = resolve_api_key(PROVIDER_BIZYAIR, api_key, use_node_api_key)
+    if not key:
+        raise Exception(missing_api_key_message(PROVIDER_BIZYAIR))
+    return key
 
 
 async def _run_task_async(api_key: str, endpoint: str, payload: dict, log_prefix: str):
@@ -58,6 +65,7 @@ class BizyAirNanoBanana2ThirdPartyT2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (NANOBANANA2_EXTENDED_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -69,11 +77,9 @@ class BizyAirNanoBanana2ThirdPartyT2INode:
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
-    async def generate(self, api_key, prompt, aspect_ratio, resolution):
+    async def generate(self, api_key, use_node_api_key, prompt, aspect_ratio, resolution):
         log_prefix = "BizyAirNanoBanana2ThirdPartyT2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 20000)
         except ValueError as e:
@@ -105,6 +111,7 @@ class BizyAirNanoBanana2ThirdPartyI2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (NANOBANANA2_EXTENDED_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -130,14 +137,12 @@ class BizyAirNanoBanana2ThirdPartyI2INode:
     CATEGORY = "🍎MYAPI"
 
     async def generate(
-        self, api_key, prompt, aspect_ratio, resolution, inputcount,
+        self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, inputcount,
         image=None, image2=None, image3=None, image4=None, image5=None,
         image6=None, image7=None, image8=None, image9=None, image10=None,
     ):
         log_prefix = "BizyAirNanoBanana2ThirdPartyI2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 20000)
         except ValueError as e:
@@ -173,6 +178,7 @@ class BizyAirNanoBanana2OfficialT2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (NANOBANANA2_EXTENDED_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["0.5K", "1K", "2K", "4K"], {"default": "1K"}),
@@ -186,11 +192,9 @@ class BizyAirNanoBanana2OfficialT2INode:
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
-    async def generate(self, api_key, prompt, aspect_ratio, resolution, seed, web_search):
+    async def generate(self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, seed, web_search):
         log_prefix = "BizyAirNanoBanana2OfficialT2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:
@@ -226,6 +230,7 @@ class BizyAirNanoBanana2OfficialI2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (NANOBANANA2_EXTENDED_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["0.5K", "1K", "2K", "4K"], {"default": "1K"}),
@@ -253,14 +258,12 @@ class BizyAirNanoBanana2OfficialI2INode:
     CATEGORY = "🍎MYAPI"
 
     async def generate(
-        self, api_key, prompt, aspect_ratio, resolution, seed, web_search, inputcount,
+        self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, seed, web_search, inputcount,
         image=None, image2=None, image3=None, image4=None, image5=None,
         image6=None, image7=None, image8=None, image9=None, image10=None,
     ):
         log_prefix = "BizyAirNanoBanana2OfficialI2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:

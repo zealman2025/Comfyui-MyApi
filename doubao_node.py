@@ -54,29 +54,25 @@ REASONING_EFFORT_OPTIONS = {
     "深度思考（high）": "high",
 }
 
+try:
+    from .myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+except ImportError:
+    from myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+
+
 class DoubaoNode:
     def __init__(self):
         self.current_seed = 0  # 初始化种子值
-
-    def _get_api_key(self, input_api_key):
-        """仅从节点输入读取 API 密钥。"""
-        invalid_placeholders = [
-            "YOUR_API_KEY",
-            "你的apikey",
-            "your_api_key_here",
-            "请输入API密钥",
-            "请输入你的API密钥",
-            "",
-        ]
-
-        if (
-            input_api_key
-            and input_api_key.strip()
-            and input_api_key.strip() not in invalid_placeholders
-        ):
-            print("[DoubaoMMM] 使用节点中的 API 密钥")
-            return input_api_key.strip()
-        return ""
 
     def _resolve_model_name(self, selected_model):
         """使用下拉选择的模型 ID。"""
@@ -95,6 +91,7 @@ class DoubaoNode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "model": (list(DOUBAO_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "图片主要讲了什么?"}),
                 "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 65535}),
@@ -288,7 +285,21 @@ class DoubaoNode:
         """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
         return await asyncio.to_thread(self._process_sync, **kwargs)
 
-    def _process_sync(self, api_key, model, prompt, max_tokens=4096, seed=0, reasoning_effort="均衡思考（medium）", image=None, image_2=None, image_3=None, image_4=None, image_5=None):
+    def _process_sync(
+        self,
+        api_key,
+        use_node_api_key,
+        model,
+        prompt,
+        max_tokens=4096,
+        seed=0,
+        reasoning_effort="均衡思考（medium）",
+        image=None,
+        image_2=None,
+        image_3=None,
+        image_4=None,
+        image_5=None,
+    ):
         """主处理函数"""
         # 应用种子值
         if seed == 0:  # 0表示使用当前种子
@@ -310,9 +321,9 @@ class DoubaoNode:
             print(f"[DoubaoMMM] Reasoning effort: {reasoning_effort}")
             
             # 获取实际使用的API密钥
-            actual_api_key = self._get_api_key(api_key)
+            actual_api_key = resolve_api_key(PROVIDER_DOUBAO, api_key, use_node_api_key)
             if not actual_api_key:
-                return ("Error: 请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。",)
+                return (f"Error: {missing_api_key_message(PROVIDER_DOUBAO)}",)
 
             actual_model = self._resolve_model_name(model)
             actual_reasoning_effort = self._resolve_reasoning_effort(reasoning_effort)

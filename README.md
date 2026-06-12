@@ -1,6 +1,6 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.4.2-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL、Geeknow 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。

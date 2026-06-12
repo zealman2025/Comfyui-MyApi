@@ -22,9 +22,14 @@ try:
         call_images_edit,
         call_images_generation,
         check_image_deps,
-        get_api_key,
         map_gpt_image2_size,
         status_json,
+    )
+    from .myapi_keys import (
+        PROVIDER_AUTODL,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
     )
 except ImportError:
     from autodl_common import (
@@ -34,9 +39,14 @@ except ImportError:
         call_images_edit,
         call_images_generation,
         check_image_deps,
-        get_api_key,
         map_gpt_image2_size,
         status_json,
+    )
+    from myapi_keys import (
+        PROVIDER_AUTODL,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
     )
 
 GPT_IMAGE2_MODEL = "gpt-image-2"
@@ -52,6 +62,7 @@ class AutodlGPTImage2T2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "quality": (GPT_IMAGE2_QUALITIES, {"default": "medium"}),
                 "resolution": (GPT_IMAGE2_RESOLUTIONS, {"default": "1K"}),
@@ -66,22 +77,22 @@ class AutodlGPTImage2T2INode:
     CATEGORY = "🍎MYAPI"
 
     @classmethod
-    def IS_CHANGED(cls, api_key, prompt, quality, resolution, aspect_ratio, seed):
+    def IS_CHANGED(cls, api_key, use_node_api_key, prompt, quality, resolution, aspect_ratio, seed):
         key_seed = random.random() if int(seed) == 0 else int(seed)
         return (key_seed, prompt or "", quality, resolution, aspect_ratio)
 
     async def generate(self, **kwargs):
         return await asyncio.to_thread(self._generate_sync, **kwargs)
 
-    def _generate_sync(self, api_key, prompt, quality, resolution, aspect_ratio, seed):
+    def _generate_sync(self, api_key, use_node_api_key, prompt, quality, resolution, aspect_ratio, seed):
         _ = seed
         missing = check_image_deps(require_torch=True)
         if missing:
             return blank_image(), f"Error: 缺少依赖: {', '.join(missing)}"
 
-        key = get_api_key(api_key)
+        key = resolve_api_key(PROVIDER_AUTODL, api_key, use_node_api_key)
         if not key:
-            return blank_image(), "Error: 请在节点中填写 AutodL API 密钥。"
+            return blank_image(), f"Error: {missing_api_key_message(PROVIDER_AUTODL)}"
 
         if not (prompt and str(prompt).strip()):
             return blank_image(), "Error: 请填写 prompt。"
@@ -119,6 +130,7 @@ class AutodlGPTImage2I2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "quality": (GPT_IMAGE2_QUALITIES, {"default": "medium"}),
                 "resolution": (GPT_IMAGE2_RESOLUTIONS, {"default": "1K"}),
@@ -149,6 +161,7 @@ class AutodlGPTImage2I2INode:
     def IS_CHANGED(
         cls,
         api_key,
+        use_node_api_key,
         prompt,
         quality,
         resolution,
@@ -184,6 +197,7 @@ class AutodlGPTImage2I2INode:
     def _generate_sync(
         self,
         api_key,
+        use_node_api_key,
         prompt,
         quality,
         resolution,
@@ -206,9 +220,9 @@ class AutodlGPTImage2I2INode:
         if missing:
             return blank_image(), f"Error: 缺少依赖: {', '.join(missing)}"
 
-        key = get_api_key(api_key)
+        key = resolve_api_key(PROVIDER_AUTODL, api_key, use_node_api_key)
         if not key:
-            return blank_image(), "Error: 请在节点中填写 AutodL API 密钥。"
+            return blank_image(), f"Error: {missing_api_key_message(PROVIDER_AUTODL)}"
 
         if not (prompt and str(prompt).strip()):
             return blank_image(), "Error: 请填写 prompt。"

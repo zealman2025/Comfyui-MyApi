@@ -14,29 +14,24 @@ DOUBAO_TRANSLATION_MODELS = {
     "doubao-seed-translation-250915": "豆包Seed翻译模型",
 }
 
+try:
+    from .myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+except ImportError:
+    from myapi_keys import (
+        PROVIDER_DOUBAO,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+
 
 class DoubaoSeedTranslationNode:
     """豆包 Seed 翻译模型节点"""
-    
-    def _get_api_key(self, input_api_key):
-        """仅从节点输入读取 API 密钥。"""
-        invalid_placeholders = [
-            "YOUR_API_KEY",
-            "你的apikey",
-            "your_api_key_here",
-            "请输入API密钥",
-            "请输入你的API密钥",
-            "",
-        ]
-
-        if (
-            input_api_key
-            and input_api_key.strip()
-            and input_api_key.strip() not in invalid_placeholders
-        ):
-            print("[DoubaoSeedTranslationNode] 使用节点中的 API 密钥")
-            return input_api_key.strip()
-        return ""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -85,6 +80,7 @@ class DoubaoSeedTranslationNode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "model": (list(DOUBAO_TRANSLATION_MODELS.keys()), {"default": "doubao-seed-translation-250915"}),
                 "text": ("STRING", {"multiline": True, "default": "若夫淫雨霏霏，连月不开，阴风怒号，浊浪排空"}),
                 "source_language": (language_options, {"default": "zh"}),
@@ -108,15 +104,15 @@ class DoubaoSeedTranslationNode:
         """异步入口：把同步逻辑放到线程池，让事件循环可并发调度其他节点。"""
         return await asyncio.to_thread(self._translate_sync, **kwargs)
 
-    def _translate_sync(self, api_key, model, text, source_language, target_language):
+    def _translate_sync(self, api_key, use_node_api_key, model, text, source_language, target_language):
         """翻译函数"""
         missing_deps = self._check_dependencies()
         if missing_deps:
             return (f"Error: 缺少必要的依赖: {', '.join(missing_deps)}. 请安装这些依赖后再试。",)
 
-        actual_api_key = self._get_api_key(api_key)
+        actual_api_key = resolve_api_key(PROVIDER_DOUBAO, api_key, use_node_api_key)
         if not actual_api_key:
-            return ("Error: 请在节点中填写豆包 API 密钥。请访问 https://console.volcengine.com/ark 获取。",)
+            return (f"Error: {missing_api_key_message(PROVIDER_DOUBAO)}",)
 
         if not text or not text.strip():
             return ("Error: 请输入要翻译的文本。",)

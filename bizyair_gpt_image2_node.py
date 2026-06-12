@@ -10,6 +10,12 @@ from .bizyair_common import (
     normalize_aspect_ratio,
     validate_prompt_length,
 )
+from .myapi_keys import (
+    PROVIDER_BIZYAIR,
+    missing_api_key_message,
+    resolve_api_key,
+    USE_NODE_API_KEY_INPUT,
+)
 
 O2_BASE_T2I = "bza-image-o2-base/text-to-image"
 O2_BASE_I2I = "bza-image-o2-base/image-to-image"
@@ -22,10 +28,11 @@ O2_OFFICIAL_I2I_MAX = 16
 GPT_IMAGE_2_ASPECT_RATIOS = NANOBANANA2_STANDARD_ASPECT_RATIOS
 
 
-def _get_clean_api_key(api_key: str) -> str:
-    invalid = {"", "YOUR_API_KEY", "你的apikey", "your_api_key_here", "请输入API密钥", "请输入你的API密钥"}
-    key = (api_key or "").strip()
-    return key if key and key not in invalid else ""
+def _require_bizyair_key(api_key: str, use_node_api_key: bool) -> str:
+    key = resolve_api_key(PROVIDER_BIZYAIR, api_key, use_node_api_key)
+    if not key:
+        raise Exception(missing_api_key_message(PROVIDER_BIZYAIR))
+    return key
 
 
 async def _run_task_async(api_key: str, endpoint: str, payload: dict, log_prefix: str):
@@ -59,6 +66,7 @@ class BizyAirGPTImage2ThirdPartyT2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -70,11 +78,9 @@ class BizyAirGPTImage2ThirdPartyT2INode:
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
-    async def generate(self, api_key, prompt, aspect_ratio, resolution):
+    async def generate(self, api_key, use_node_api_key, prompt, aspect_ratio, resolution):
         log_prefix = "BizyAirGPTImage2ThirdPartyT2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:
@@ -109,6 +115,7 @@ class BizyAirGPTImage2ThirdPartyI2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -134,14 +141,12 @@ class BizyAirGPTImage2ThirdPartyI2INode:
     CATEGORY = "🍎MYAPI"
 
     async def generate(
-        self, api_key, prompt, aspect_ratio, resolution, inputcount,
+        self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, inputcount,
         image=None, image2=None, image3=None, image4=None, image5=None,
         image6=None, image7=None, image8=None, image9=None, image10=None,
     ):
         log_prefix = "BizyAirGPTImage2ThirdPartyI2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:
@@ -180,6 +185,7 @@ class BizyAirGPTImage2OfficialT2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -192,11 +198,9 @@ class BizyAirGPTImage2OfficialT2INode:
     FUNCTION = "generate"
     CATEGORY = "🍎MYAPI"
 
-    async def generate(self, api_key, prompt, aspect_ratio, resolution, quality):
+    async def generate(self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, quality):
         log_prefix = "BizyAirGPTImage2OfficialT2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:
@@ -230,6 +234,7 @@ class BizyAirGPTImage2OfficialI2INode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "prompt": ("STRING", {"multiline": True, "default": "输入提示词"}),
                 "aspect_ratio": (GPT_IMAGE_2_ASPECT_RATIOS, {"default": "16:9"}),
                 "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
@@ -262,15 +267,13 @@ class BizyAirGPTImage2OfficialI2INode:
     CATEGORY = "🍎MYAPI"
 
     async def generate(
-        self, api_key, prompt, aspect_ratio, resolution, quality, inputcount,
+        self, api_key, use_node_api_key, prompt, aspect_ratio, resolution, quality, inputcount,
         image=None, image2=None, image3=None, image4=None, image5=None,
         image6=None, image7=None, image8=None, image9=None, image10=None,
         image11=None, image12=None, image13=None, image14=None, image15=None, image16=None,
     ):
         log_prefix = "BizyAirGPTImage2OfficialI2I"
-        key = _get_clean_api_key(api_key)
-        if not key:
-            raise Exception("请在节点中填写 BizyAir API 密钥。")
+        key = _require_bizyair_key(api_key, use_node_api_key)
         try:
             clean_prompt = validate_prompt_length(prompt, 2500)
         except ValueError as e:

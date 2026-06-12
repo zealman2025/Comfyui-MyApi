@@ -54,6 +54,21 @@ AUTODL_MODELS = (
 
 GEMINI_MODEL_ID = "gemini-3.1-pro-preview"
 
+try:
+    from .myapi_keys import (
+        PROVIDER_AUTODL,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+except ImportError:
+    from myapi_keys import (
+        PROVIDER_AUTODL,
+        missing_api_key_message,
+        resolve_api_key,
+        USE_NODE_API_KEY_INPUT,
+    )
+
 
 class AutodlApiNode:
     def _normalize_api_key(self, key: str) -> str:
@@ -90,6 +105,7 @@ class AutodlApiNode:
         return {
             "required": {
                 "api_key": ("STRING", {"default": "", "multiline": False}),
+                "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "model": (list(AUTODL_MODELS), {"default": AUTODL_MODELS[0]}),
                 "system_prompt": ("STRING", {"multiline": True, "default": ""}),
                 "user_prompt": ("STRING", {"multiline": True, "default": ""}),
@@ -114,6 +130,7 @@ class AutodlApiNode:
     def IS_CHANGED(
         cls,
         api_key,
+        use_node_api_key,
         model,
         system_prompt,
         user_prompt,
@@ -339,6 +356,7 @@ class AutodlApiNode:
     def _process_sync(
         self,
         api_key,
+        use_node_api_key,
         model,
         system_prompt,
         user_prompt,
@@ -354,9 +372,9 @@ class AutodlApiNode:
         if missing:
             return (f"Error: 缺少依赖: {', '.join(missing)}",)
 
-        key = self._get_api_key(api_key)
+        key = resolve_api_key(PROVIDER_AUTODL, api_key, use_node_api_key)
         if not key:
-            return ("Error: 请在节点中填写 AutodL API 密钥。",)
+            return (f"Error: {missing_api_key_message(PROVIDER_AUTODL)}",)
 
         slots = [image, image_2, image_3, image_4, image_5]
 
