@@ -39,6 +39,8 @@ except ImportError:
     HAS_REQUESTS = False
 
 DOUBAO_MODELS = {
+    "doubao-seed-2-1-pro-260628": "doubao-seed-2-1-pro-260628",
+    "doubao-seed-2-1-turbo-260628": "doubao-seed-2-1-turbo-260628",
     "doubao-seed-2-0-pro-260215": "doubao-seed-2-0-pro-260215",
     "doubao-seed-2-0-lite-260428": "doubao-seed-2-0-lite-260428",
     "doubao-seed-2-0-mini-260428": "doubao-seed-2-0-mini-260428",
@@ -92,7 +94,7 @@ class DoubaoNode:
                 "use_node_api_key": USE_NODE_API_KEY_INPUT,
                 "model": (list(DOUBAO_MODELS.keys()),),
                 "prompt": ("STRING", {"multiline": True, "default": "图片主要讲了什么?"}),
-                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 65535}),
+                "max_tokens": ("INT", {"default": 4096, "min": 1, "max": 131072}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0x7fffffff}),
                 "reasoning_effort": (list(REASONING_EFFORT_OPTIONS.keys()), {"default": "均衡思考（medium）"}),
             },
@@ -326,9 +328,10 @@ class DoubaoNode:
             actual_model = self._resolve_model_name(model)
             actual_reasoning_effort = self._resolve_reasoning_effort(reasoning_effort)
             
-            # 使用豆包API，针对深度思考模型设置更长的超时时间
-            # 1.8版本支持reasoning_effort，可能需要更长的处理时间
-            timeout_value = 1800 if "1-8" in actual_model or "1-6" in actual_model else 60
+            # 深度思考模型（1.6/1.8、2.1 系列）在 high 档 reasoning_effort 下可能耗时较长
+            timeout_value = 1800 if any(
+                tag in actual_model for tag in ("1-8", "1-6", "2-1")
+            ) else 60
 
             print(f"[DoubaoMMM] Calling Doubao API with model: {actual_model}")
             
@@ -384,6 +387,9 @@ class DoubaoNode:
             
             if actual_reasoning_effort:
                 payload["reasoning_effort"] = actual_reasoning_effort
+
+            if seed and seed > 0:
+                payload["seed"] = seed
             
             print(f"[DoubaoMMM] API端点: {url}")
             print(f"[DoubaoMMM] 请求payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
@@ -413,7 +419,7 @@ class DoubaoNode:
                     error_detail += f"1. 模型名称或接入点 ID 是否正确\n"
                     error_detail += f"2. 您的账户是否有权限访问该模型\n"
                     error_detail += f"3. 模型是否已发布或需要特殊申请\n"
-                    error_detail += f"4. 可先尝试模型 ID：doubao-seed-2-0-pro-260215\n"
+                    error_detail += f"4. 可先尝试模型 ID：doubao-seed-2-1-pro-260628\n"
                     error_detail += f"\n原始错误: {err_message}"
                     return (f"Error: {resp.status_code} - {error_detail}",)
                 return (f"Error: {resp.status_code} - {err_message}",)

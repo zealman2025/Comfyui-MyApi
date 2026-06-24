@@ -1,21 +1,21 @@
 # 🍎 ComfyUI MyAPI - 多模态 AI 节点集合
 
-[![Version](https://img.shields.io/badge/version-2.4.2-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://github.com/zealman2025/Comfyui-MyApi/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、BizyAir、AutoDL、Geeknow 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
+一个面向 ComfyUI 的多模态 AI 节点集合，集成豆包、DeepSeek、AutoDL、Geeknow 等服务，覆盖文本生成、视觉理解、图像生成、图像编辑、翻译、文本处理等常见场景。所有节点都遵循统一的密钥与输入输出规范，便于在工作流中混搭使用。
 
 ## 主要特性
 
 - 🔑 **节点内填写密钥**：每个节点的 `api_key` 输入框中独立填写，不读取本地配置文件
 - 🖼️ **多模态支持**：覆盖文本、图像理解、图像生成、图像编辑、翻译等场景
-- 🎯 **多服务集成**：豆包、DeepSeek、BizyAir、AutoDL、Geeknow 等主流 AI 服务一站式接入
+- 🎯 **多服务集成**：豆包、DeepSeek、AutoDL、Geeknow 等主流 AI 服务一站式接入
 - 🧩 **统一输出规范**：所有字符串输出端口统一命名为 `string`，便于上下游连接
-- 🪄 **动态图片输入**：BizyAir / AutoDL / Geeknow 图生图节点提供 `inputcount` 与「更新图片输入」按钮，动态增减图像端口
-- 💰 **节点价格标签**：BizyAir 节点显示蓝色金币价目，AutoDL 节点显示绿色人民币 Token 价目（右上角 Badge）
+- 🪄 **动态图片输入**：AutoDL / Geeknow 图生图节点提供 `inputcount` 与「更新图片输入」按钮，动态增减图像端口
+- 💰 **节点价格标签**：AutoDL 节点显示绿色人民币 Token 价目（右上角 Badge）
 - 📤 **SSH 文件上传**：将工作流中的图片、音频、文本、模型文件或本地目录上传到 SSH 服务器
 - 📦 **自动安装依赖**：首次加载时自动按 `requirements.txt` 安装缺失依赖（可通过环境变量关闭）
-- ⚡ **异步并发执行**：所有 API 节点（BizyAir / AutoDL / Geeknow / 豆包 / DeepSeek）全部 `async def`，多个无依赖节点可并行请求，BizyAir ModelZoo 节点更使用 `aiohttp` 实现真正的异步 IO
+- ⚡ **异步并发执行**：所有 API 节点（AutoDL / Geeknow / 豆包 / DeepSeek）全部 `async def`，多个无依赖节点可并行请求
 
 ## 节点一览
 
@@ -33,6 +33,8 @@
 
 | 模型 ID | 定位 |
 |---------|------|
+| `doubao-seed-2-1-pro-260628` | 2.1 旗舰深度思考，Coding / Agent / 多模态 |
+| `doubao-seed-2-1-turbo-260628` | 2.1 低成本低时延，效果比肩 Pro |
 | `doubao-seed-2-0-pro-260215` | 旗舰全能，复杂推理与 Agent |
 | `doubao-seed-2-0-lite-260428` | 均衡型，质量与速度兼顾 |
 | `doubao-seed-2-0-mini-260428` | 低时延高并发，支持多档思考深度 |
@@ -47,19 +49,6 @@
 | 🥟 豆包翻译模型 | 火山引擎 Doubao Seed Translation | `source_language`、`target_language` | 30+ 种语言互译，文档与多语言内容处理 |
 
 ### 图像生成 / 图像编辑
-
-#### BizyAir 系列（需充值金币，ModelZoo OpenAPI）
-
-| 节点 | 输入图片 | 主要参数 | 适用场景 |
-|------|---------|----------|----------|
-| 🌐 BizyAir NanoBanana2 第三方渠道版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本生成 |
-| 🌐 BizyAir NanoBanana2 第三方渠道版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图编辑（OSS 上传） |
-| 🌐 BizyAir NanoBanana2 官方版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（0.5K/1K/2K/4K）、`seed`、`web_search` | 官方线路文生图 |
-| 🌐 BizyAir NanoBanana2 官方版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 官方线路图生图，支持联网搜索 |
-| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`（1K/2K/4K） | 纯文本生成 |
-| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 图生图 | 1–10 张（动态） | 同上 + `inputcount` | 多参考图合成（4K+1:1 自动降为 2K） |
-| 🌐 BizyAir GPT-IMAGE-2 官方版 文生图 | 0 张 | `prompt`、`aspect_ratio`、`resolution`、`quality` | 官方线路，UI 比例映射为 width/height |
-| 🌐 BizyAir GPT-IMAGE-2 官方版 图生图 | 1–16 张（动态） | 同上 + `inputcount` | 官方线路图生图，最多 16 参考图 |
 
 #### AutoDL 系列（需 AutoDL 大模型 Token）
 
@@ -123,7 +112,7 @@
 
 **图像节点支持的宽高比**
 
-文生图 / 图生图类节点（BizyAir NanoBanana2、GPT-IMAGE-2，AutoDL / Geeknow 对应节点）均可在节点上选择宽高比，例如：`1:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9` 等（以节点下拉选项为准）。
+文生图 / 图生图类节点（AutoDL / Geeknow 对应节点）均可在节点上选择宽高比，例如：`1:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9` 等（以节点下拉选项为准）。
 
 - **分辨率**：在节点的 `resolution` 或 `image_size` 中选择 `0.5K` / `1K` / `2K` / `4K`（AutoDL GPT-IMAGE-2 另有 `auto`）
 - **图生图**：连接 `image`、`image2` … 参考图，用 `inputcount` 控制端口数量（见下文「动态图片输入」）
@@ -149,25 +138,6 @@
 
 节点右上角会显示参考价格（ComfyUI 界面标签）。**实际扣费以各平台账单为准**。
 
-### BizyAir（蓝色标签：金币 / 次）
-
-| 节点 | 价格 |
-|------|------|
-| 🌐 BizyAir NanoBanana2 第三方渠道版 文生图 / 图生图 | **200** 金币 / 次（1K / 2K）；**250** 金币 / 次（4K） |
-| 🌐 BizyAir NanoBanana2 官方版 文生图 / 图生图 | **550** 金币 / 次（0.5K / 1K）；**850** 金币 / 次（2K）；**1100** 金币 / 次（4K） |
-| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 文生图 / 图生图 | **100** 金币 / 次 |
-| 🌐 BizyAir GPT-IMAGE-2 官方版 文生图 / 图生图 | 见下表（依 `resolution` + `quality` 分档） |
-
-**BizyAir GPT-IMAGE-2 官方版分档价目（金币 / 次）：**
-
-| resolution | low | medium | high |
-|------------|-----|--------|------|
-| 1K | 161 | 378 | 1120 |
-| 2K | 182 | 630 | 2149 |
-| 4K | 224 | 966 | 3486 |
-
-充值与余额查询：[BizyAir 官网](https://bizyair.cn)
-
 ### 火山方舟 / 豆包（人民币）
 
 计费单位以 [火山方舟模型价格](https://www.volcengine.com/docs/82379/1544106) 为准。以下为**在线推理、输入 ≤32K** 档参考价（输入更长时分档加价）。
@@ -176,6 +146,8 @@
 
 | 模型 ID | 输入 | 输出 | 缓存命中 |
 |---------|------|------|----------|
+| `doubao-seed-2-1-pro-260628` | ¥6 / M | ¥30 / M | ¥1.2 / M |
+| `doubao-seed-2-1-turbo-260628` | ¥3 / M | ¥15 / M | ¥0.6 / M |
 | `doubao-seed-2-0-pro-260215` | ¥3.2 / M | ¥16 / M | ¥0.64 / M |
 | `doubao-seed-2-0-lite-260428` | ¥0.6 / M | ¥3.6 / M | ¥0.12 / M |
 | `doubao-seed-2-0-mini-260428` | ¥0.2 / M | ¥2 / M | ¥0.04 / M |
@@ -253,9 +225,6 @@
 
 | 节点 | 最大图片数 |
 |------|-----------|
-| 🌐 BizyAir NanoBanana2 第三方/官方版 图生图 | 10 |
-| 🌐 BizyAir GPT-IMAGE-2 第三方渠道版 图生图 | 10 |
-| 🌐 BizyAir GPT-IMAGE-2 官方版 图生图 | 16 |
 | 🍎 AutodL Nano Banana 2 图生图 | 14 |
 | 🍎 AutodL GPT-IMAGE-2 图生图 | 10 |
 | 🍆 Geeknow GPT-IMAGE-2 图生图 | 10 |
@@ -303,7 +272,6 @@
 | 服务 | 获取入口 |
 |------|---------|
 | 🥟 豆包 / 火山方舟 | <https://www.volcengine.com/experience/ark> |
-| 🌐 BizyAir | <https://bizyair.cn> |
 | 🔎 DeepSeek | <https://platform.deepseek.com/> |
 | 🍎 AutoDL | <https://autodl.art/large-model/tokens> |
 | 🍆 Geeknow | <https://geeknow.ai>（密钥在平台控制台获取） |
@@ -353,7 +321,6 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 ### 图像输入
 
 - 推荐使用适中分辨率，节点会在上传前自动压缩 / 缩放，避免超过服务端体积限制
-- BizyAir 图生图需先上传参考图，网络较慢时请耐心等待
 - Geeknow 节点请选择正确的 `line` 线路；国内用户建议优先使用 CDN 线路
 - Geeknow GPT-IMAGE-2 图生图若参考图较大，可切换 `reference_mode` 为「上传获取URL」以减小请求体积
 - Geeknow Gemini 图生图参考图通过 `inlineData` Base64 内嵌传递，节点会自动压缩参考图
@@ -376,7 +343,7 @@ COMFYUI_MYAPI_SKIP_AUTO_INSTALL=1
 ## 注意事项
 
 - 各服务都有调用频率与额度限制，请遵守对应服务条款
-- BizyAir 节点需在平台充值金币后使用；AutoDL / Geeknow / 火山方舟 / DeepSeek 按 Token 或按张计费，请保证账户余额充足
+- AutoDL / Geeknow / 火山方舟 / DeepSeek 按 Token 或按张计费，请保证账户余额充足
 - 海外 / 中转服务需要稳定的网络连接
 - 所有节点的密钥仅在本地节点中使用，不会上传到第三方
 - 旧版单一节点「🍎AutodL Nano Banana 2」已拆成「文生图」「图生图」两个节点，旧工作流请改连新节点

@@ -1,5 +1,5 @@
 /**
- * ComfyUI 设置面板：MYAPI 全局 API Key（豆包 / AutoDL / BizyAir / Geeknow）
+ * ComfyUI 设置面板：MYAPI 全局 API Key（豆包 / AutoDL / Geeknow）
  *
  * 使用 ComfyUI 原生 text 设置项：
  *   - 自动套用默认 CSS、4 个条目均正常显示
@@ -13,7 +13,6 @@ const API_KEYS_URL = "/myapi/settings/api_keys";
 const PROVIDER_DEFS = [
     { provider: "doubao", label: "豆包 API Key" },
     { provider: "autodl", label: "AutoDL API Key" },
-    { provider: "bizyair", label: "BizyAir API Key" },
     { provider: "geeknow", label: "Geeknow API Key" },
 ];
 
